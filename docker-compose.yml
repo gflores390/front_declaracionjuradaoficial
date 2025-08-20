@@ -1,0 +1,21 @@
+services:
+  frontend:
+    container_name: dj-nextjs-dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dj-nextjs:dev
+    ports:
+      - "3001:3000" # Map host port 3001 to container port 3000
+    volumes:
+      - .:/app # Mount the current directory into the container's /app directory
+      - /app/node_modules # Exclude the node_modules from being overwritten by the host mount
+    environment:
+      - NODE_ENV=development
+      - TZ=America/La_Paz
+    networks:
+      - web_network
+
+networks:
+  web_network:
+    external: true
