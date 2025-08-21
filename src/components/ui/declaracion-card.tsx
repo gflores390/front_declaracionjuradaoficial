@@ -1,3 +1,4 @@
+"use client";
 import { DeclaracionData } from "@/app/declaracion-jurada/declaracion-jurada.interface";
 import {
     Card,
@@ -9,6 +10,13 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "./badge";
+import { Button } from "./button";
+import { LucideTrash } from "lucide-react";
+import { deleteDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
+import { revalidate } from "@/lib/actions";
+import { toast } from "sonner"
+
+
 
 export function DeclaracionCard({ declaracion }: { declaracion: DeclaracionData }) {
     const fechaFormulario = declaracion.formulario.fecha
@@ -16,11 +24,23 @@ export function DeclaracionCard({ declaracion }: { declaracion: DeclaracionData 
             .format(new Date(declaracion.formulario.fecha))
         : "-";
 
+    const handleDelete = async () => {
+        try {
+            await deleteDeclaracion(declaracion._id);
+            await revalidate("/declaracion-jurada");
+            toast.success('Declaracion Jurada eliminada con éxito');
+        } catch (error) {
+            console.log("Error al eliminar la Declaracion Jurada:", error);
+        }
+    }
+
     return (<Card>
         <CardHeader>
-            <CardTitle>Datos Personales</CardTitle>
+            <CardTitle className=" flex justify-between items-center">Datos Personales
+                <Button onClick={handleDelete} size="sm" variant="ghost"> <LucideTrash /></Button>
+            </CardTitle>
             <CardDescription>Descripcion de la Persona</CardDescription>
-            <CardAction>{fechaFormulario}</CardAction>
+            {/* <CardAction>{fechaFormulario}</CardAction> */}
         </CardHeader>
         <CardContent>
             <p>{declaracion.datosPersonales.nombres} {declaracion.datosPersonales.paterno} {declaracion.datosPersonales.materno}</p>
