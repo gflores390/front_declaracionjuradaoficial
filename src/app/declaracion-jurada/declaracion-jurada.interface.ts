@@ -66,11 +66,7 @@ interface OtraInformacion {
     documentoRespaldo?: string;
     montoDescuento?: number;
 }
-interface Formulario {
-    formulario: string;
-    usuario: string;
-    fecha: Date;
-}
+
 
 export interface DeclaracionData {
     _id: string;
@@ -80,7 +76,6 @@ export interface DeclaracionData {
     actividadAdministrativa: ActividadAdministrativa[];
     profesionalJubilado: ProfesionalJubilado[];
     otraInformacion: OtraInformacion[];
-    formulario: Formulario;
     __v: number;
 }
 
@@ -92,7 +87,6 @@ export interface Inputs {
     actividadAdministrativa: ActividadAdministrativa[];
     profesionalJubilado: ProfesionalJubilado[];
     otraInformacion: OtraInformacion[];
-    formulario: Formulario;
     __v: number;
 }
 

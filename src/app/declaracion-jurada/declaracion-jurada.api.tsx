@@ -7,7 +7,6 @@ export const getDeclaracionJurada = async (): Promise<DeclaracionData[]> => {
     try {
         const response = await fetch(`${URL}/declaracion-jurada`,
             { cache: "no-store" });
-        // console.log("Fetching Declaracion Jurada from API:", response);
         const data = await response.json();
         return data;
     } catch (error) {
@@ -16,11 +15,8 @@ export const getDeclaracionJurada = async (): Promise<DeclaracionData[]> => {
 }
 
 export const createDeclaracionJurada = async (declaracion: declaracionForm): Promise<DeclaracionData> => {
-    console.log("POST URL:", URL + "/declaracion-jurada");
-    console.log("Body:", declaracion);
     try {
-        // const response = await fetch(`${URL}/declaracion-jurada`, {
-        const response = await fetch(`http://localhost:3000/api/v1/declaracion-jurada`, {
+        const response = await fetch(`${URL}/declaracion-jurada`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -42,6 +38,35 @@ export const deleteDeclaracion = async (id: string): Promise<{ message: string }
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Error al eliminar la Declaracion Jurada");
+        return data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const getDeclaracion = async (id: string): Promise<DeclaracionData> => {
+    try {
+        const response = await fetch(`${URL}/declaracion-jurada/${id}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Error al obtener la Declaracion Jurada");
+        return data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+export const updateDeclaracion = async (id: string, declaracion: declaracionForm): Promise<DeclaracionData> => {
+    try {
+        const response = await fetch(`${URL}/declaracion-jurada/${id}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(declaracion),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Error al actualizar la Declaracion Jurada");
         return data;
     } catch (error) {
         throw error;
