@@ -15,8 +15,8 @@ services:
       - TZ=America/La_Paz
     networks:
       - web_network
-    hosts:
-      - dj-nestjs-mgdb:dev.api.declaracion.posgrado.edu.bo
+    extra_hosts:
+      - "dennis.dennis.psg.bo:172.20.0.2"
 
 networks:
   web_network:
