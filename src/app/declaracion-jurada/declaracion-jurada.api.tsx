@@ -3,12 +3,20 @@ import { DeclaracionData, declaracionForm } from "./declaracion-jurada.interface
 // const { NEST_API_URL } = process.env;
 const URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const getDeclaracionJurada = async (): Promise<DeclaracionData[]> => {
+export const getDeclaracionJurada = async (
+    { offset, limit }: { offset: number; limit: number }
+): Promise<{
+    declaracionJurada: DeclaracionData[];
+    totalPages: number;
+}> => {
     try {
-        const response = await fetch(`${URL}/declaracion-jurada`,
+        const response = await fetch(`${URL}/declaracion-jurada?limit=${limit}&offset=${offset}`,
             { cache: "no-store" });
         const data = await response.json();
-        return data;
+        return {
+            declaracionJurada: data.declaracion || [],
+            totalPages: data.totalPages,
+        };
     } catch (error) {
         throw error;
     }

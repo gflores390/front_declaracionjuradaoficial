@@ -17,7 +17,7 @@ import { deleteDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.a
 import { revalidate } from "@/lib/actions";
 import { toast } from "sonner";
 import Link from "next/link";
-import ModalPDF from "./modalPDF";
+import ModalPDF from "./modal-pdf";
 
 export function DeclaracionCard({ declaracion }: { declaracion: DeclaracionData }) {
     const [openPdf, setOpenPdf] = useState(false);
