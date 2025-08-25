@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button"
 import { LucidePlusCircle } from "lucide-react"
 import { DeclaracionData } from "./declaracion-jurada.interface";
-import { DeclaracionCard } from "@/components/ui/declaracion-card";
+import { DeclaracionCard } from "@/components/declaracion-jurada/declaracion-card";
 import { getDeclaracionJurada } from "./declaracion-jurada.api";
 import Link from "next/link";
-import { DeclaracionPagination } from "@/components/ui/declaracion-pagination";
+import { DeclaracionPagination } from "@/components/declaracion-jurada/declaracion-pagination";
 
 interface Params {
     searchParams?: Promise<{

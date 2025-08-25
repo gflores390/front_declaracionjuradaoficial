@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeclaracionData, Inputs } from "../declaracion-jurada.interface";
 import { getDeclaracion } from "../declaracion-jurada.api";
-import { DeclaracionForm } from "@/components/ui/declaracion-form";
+import { DeclaracionForm } from "@/components/declaracion-jurada/declaracion-form";
 
 interface Params {
     params: Promise<{

@@ -10,14 +10,14 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "./badge";
-import { Button } from "./button";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { LucideTrash, FileText } from "lucide-react";
 import { deleteDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
 import { revalidate } from "@/lib/actions";
 import { toast } from "sonner";
 import Link from "next/link";
-import ModalPDF from "./modal-pdf";
+import ModalPDF from "../ui/modal-pdf";
 
 export function DeclaracionCard({ declaracion }: { declaracion: DeclaracionData }) {
     const [openPdf, setOpenPdf] = useState(false);

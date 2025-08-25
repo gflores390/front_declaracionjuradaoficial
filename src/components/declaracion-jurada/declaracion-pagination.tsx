@@ -4,7 +4,7 @@ import { LucideChevronLeft, LucideChevronRight } from "lucide-react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import { Button } from "./button";
+import { Button } from "../ui/button";
 
 interface Props {
     offset: number;
