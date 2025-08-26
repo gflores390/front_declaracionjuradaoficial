@@ -311,7 +311,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             <Input {...register(`actividadDocenteAdministrativa.${index}.data.cargaHoraria`)} placeholder="Carga Horaria" />
                             <Input {...register(`actividadDocenteAdministrativa.${index}.data.dias`)} placeholder="Días" />
                             <Input {...register(`actividadDocenteAdministrativa.${index}.data.horasHorarios`)} placeholder="Horarios" />
-                            <Input type="number" {...register(`actividadDocenteAdministrativa.${index}.data.totalGanadoBs`)} placeholder="Total Ganado Bs" />
+                            <Input type="number" {...register(`actividadDocenteAdministrativa.${index}.data.totalGanadoBs`, { setValueAs: v => Number(v) })} placeholder="Total Ganado Bs" />
                             <Button type="button" variant="destructive" onClick={() => removeDocente(index)}>Eliminar</Button>
                         </div>
                     ))}
@@ -338,7 +338,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             </Select>
                             <Input {...register(`actividadExtraUniversitaria.${index}.diasLaborales`)} placeholder="Días Laborales" />
                             <Input {...register(`actividadExtraUniversitaria.${index}.tiempoCompletoCargaHoraria`)} placeholder="Carga Horaria" />
-                            <Input type="number" {...register(`actividadExtraUniversitaria.${index}.totalGanado`)} placeholder="Total Ganado" />
+                            <Input type="number" {...register(`actividadExtraUniversitaria.${index}.totalGanado`, { setValueAs: v => Number(v) })} placeholder="Total Ganado" />
                             <Button type="button" variant="destructive" onClick={() => removeExtra(index)}>Eliminar</Button>
                         </div>
                     ))}
@@ -366,7 +366,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             <Input {...register(`actividadAdministrativa.${index}.modalidadContrato`)} placeholder="Contrato" />
                             <Input {...register(`actividadAdministrativa.${index}.diasHorarioFunciones`)} placeholder="Días/Horario" />
                             <Input {...register(`actividadAdministrativa.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
-                            <Input type="number" {...register(`actividadAdministrativa.${index}.totalGanado`)} placeholder="Total Ganado" />
+                            <Input type="number" {...register(`actividadAdministrativa.${index}.totalGanado`, { setValueAs: v => Number(v) })} placeholder="Total Ganado" />
                             <Button type="button" variant="destructive" onClick={() => removeAdmin(index)}>Eliminar</Button>
                         </div>
                     ))}
@@ -385,7 +385,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             <Input {...register(`profesionalJubilado.${index}.nombreInstitucion`)} placeholder="Institución" />
                             <Input {...register(`profesionalJubilado.${index}.nivelCargo`)} placeholder="Cargo" />
                             <Input type="date" {...register(`profesionalJubilado.${index}.fechaDeJubilacion`)} />
-                            <Input type="number" {...register(`profesionalJubilado.${index}.montoTitular`)} placeholder="Monto Bs" />
+                            <Input type="number" {...register(`profesionalJubilado.${index}.montoTitular`, { setValueAs: v => Number(v) })} placeholder="Monto Bs" />
                             <Button type="button" variant="destructive" onClick={() => removeJubilado(index)}>Eliminar</Button>
                         </div>
                     ))}
@@ -404,7 +404,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             <Textarea {...register(`otraInformacion.${index}.descripcionAdecuacionSalarial`)} placeholder="Descripción" />
                             <Input {...register(`otraInformacion.${index}.institucion`)} placeholder="Institución" />
                             <Input {...register(`otraInformacion.${index}.documentoRespaldo`)} placeholder="Documento" />
-                            <Input type="number" {...register(`otraInformacion.${index}.montoDescuento`)} placeholder="Monto Descuento" />
+                            <Input type="number" {...register(`otraInformacion.${index}.montoDescuento`, { setValueAs: v => Number(v) })} placeholder="Monto Descuento" />
                             <Button type="button" variant="destructive" onClick={() => removeOtra(index)}>Eliminar</Button>
                         </div>
                     ))}

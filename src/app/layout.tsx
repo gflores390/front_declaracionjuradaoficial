@@ -1,10 +1,13 @@
-'use client'; // NUEVO: Hace que este layout sea Client Component para poder usar hooks (useState, useEffect)
-import { useState, useEffect } from "react"; // NUEVO: Necesario para manejar dark/light toggle
+'use client';
+import { useState, useEffect } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner"
 import { Button } from "@/components/ui/button";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Menu } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/ui/app-sidebar";
+
 
 
 const geistSans = Geist({
@@ -23,10 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
 
-  // NUEVO: Estado para controlar si estamos en dark mode
+  // Estado para controlar si estamos en dark mode
   const [darkMode, setDarkMode] = useState(false);
 
-  // NUEVO: Efecto que aplica la clase "dark" al <html> cuando darkMode cambia
+  // Efecto que aplica la clase "dark" al <html> cuando darkMode cambia
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
@@ -34,45 +37,66 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen`}
       >
-        {/* HEADER: barra superior de navegación */}
-        <header className="bg-white dark:bg-gray-900 shadow-md">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            {/* Logo o nombre del proyecto */}
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Posgrado (UPEA)
-            </h1>
+        {/* PROVIDER del sidebar */}
+        <SidebarProvider>
+          {/* SIDEBAR a la izquierda */}
+          <AppSidebar />
 
-            {/* Navegación */}
-            <nav className="space-x-4 flex items-center">
-              {/* NUEVO: Botón toggle dark/light */}
-              <Button variant="ghost" onClick={() => setDarkMode(!darkMode)} className="transition-transform duration-300 hover:scale-110">
-                {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-700" />}
-              </Button>
-              <Button variant="ghost">Inicio</Button> {/* Botón estilo ghost de Shadcn */}
-              <Button variant="ghost">Declaración</Button>
-              <Button variant="ghost">Contacto</Button>
-            </nav>
+          {/* CONTENEDOR principal */}
+          <div className="flex-1 flex flex-col">
 
+            {/* HEADER */}
+            <header className="sticky top-0 z-50 backdrop-blur-md bg-white/70 dark:bg-gray-900/70 shadow-md transition-colors duration-300">
+              <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+
+                {/* BOTÓN HAMBURGER (abre/cierra sidebar) */}
+                <div className="flex items-center gap-4">
+                  <SidebarTrigger>
+                    <Menu className="w-6 h-6 text-gray-800 dark:text-gray-200 cursor-pointer" />
+                  </SidebarTrigger>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Posgrado (UPEA)
+                  </h1>
+                </div>
+
+                {/* Acciones del header */}
+                <nav className="space-x-4 flex items-center">
+                  {/* Toggle dark/light */}
+                  <Button
+                    variant="ghost"
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="transition-transform duration-300 hover:scale-110"
+                  >
+                    {darkMode ? (
+                      <Sun className="w-5 h-5 text-yellow-400" />
+                    ) : (
+                      <Moon className="w-5 h-5 text-gray-700" />
+                    )}
+                  </Button>
+                </nav>
+              </div>
+            </header>
+
+            {/* MAIN */}
+            <main className="flex-1 p-6">
+              {children}
+            </main>
+
+            {/* FOOTER */}
+            <footer className="bg-gray-100 dark:bg-gray-800 py-6 mt-auto">
+              <div className="container mx-auto px-4 text-center text-gray-700 dark:text-gray-300">
+                © {new Date().getFullYear()} Area de Sistemas.
+              </div>
+            </footer>
           </div>
-        </header>
+        </SidebarProvider>
 
-        {/* MAIN: contenido principal que cambia según la página */}
-        <main className="flex-1">
-          {children} {/* Aquí se renderiza cada página dentro del layout */}
-        </main>
-
-        {/* FOOTER: parte inferior de la página */}
-        <footer className="bg-gray-100 dark:bg-gray-800 py-6 mt-auto">
-          <div className="container mx-auto px-4 text-center text-gray-700 dark:text-gray-300">
-            © {new Date().getFullYear()} Area de Sistemas.
-          </div>
-        </footer>
-
-        {children}
+        {/* TOAST NOTIFICATIONS */}
         <Toaster position="top-center" expand={true} richColors />
       </body>
     </html>
   );
+
 }
