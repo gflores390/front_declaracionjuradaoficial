@@ -1,38 +1,51 @@
 "use client";
-import { LucidePlusCircle, MoreHorizontal, Pencil, Trash, Loader2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { useState } from "react";
+import { LucidePlusCircle, MoreHorizontal, Pencil, Trash, Loader2, FileText } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { toast } from "sonner";
 import { DeclaracionData } from "@/app/declaracion-jurada/declaracion-jurada.interface";
-import { useState } from "react";
 import { deleteDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
 import { revalidate } from "@/lib/actions";
 import Link from "next/link";
+import ModalPDF from "./modal-pdf";
 
 export function DeclaracionTable({ declaracion }: { declaracion: DeclaracionData[] }) {
     const [loadingButtons, setLoadingButtons] = useState<{ [key: string]: boolean }>({});
+    const [openPdf, setOpenPdf] = useState<{ open: boolean; pdfUrl: string }>({ open: false, pdfUrl: "" });
 
     const handleDelete = async (_id: string) => {
         setLoadingButtons((prev) => ({ ...prev, [`delete-${_id}`]: true }));
         try {
             await deleteDeclaracion(_id);
             await revalidate("/declaracion-jurada");
-            toast.success('Declaración Jurada eliminada con éxito');
+            toast.success("Declaración Jurada eliminada con éxito");
         } catch (error) {
             console.error("Error al eliminar la Declaración Jurada:", error);
-            toast.error('Error al eliminar la Declaración Jurada');
+            toast.error("Error al eliminar la Declaración Jurada");
         } finally {
             setLoadingButtons((prev) => ({ ...prev, [`delete-${_id}`]: false }));
         }
+    };
+
+    const handleOpenPdf = (id: string) => {
+        setOpenPdf({ open: true, pdfUrl: `${process.env.NEXT_PUBLIC_API_URL}/declaracion-jurada/reporte/${id}` });
     };
 
     return (
         <div className="max-w-screen-lg mx-auto p-8">
             {/* Header */}
             <header className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Declaración Jurada</h1>
+                <h1 className="text-3xl font-bold dark:text-white">Declaración Jurada</h1>
                 <Button asChild disabled={loadingButtons["create"]}>
                     <Link
                         href="/declaracion-jurada/nueva"
@@ -53,40 +66,51 @@ export function DeclaracionTable({ declaracion }: { declaracion: DeclaracionData
             </header>
 
             {/* Tabla */}
-            <div className="overflow-hidden rounded-lg border bg-white shadow-md">
+            <div className="overflow-hidden rounded-lg border bg-white dark:bg-gray-900 dark:border-gray-700 shadow-md">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="dark:text-white">
                         <TableRow>
                             <TableHead><Checkbox /></TableHead>
                             <TableHead>Nombres</TableHead>
                             <TableHead>CI</TableHead>
                             <TableHead>Número</TableHead>
                             <TableHead>Correo</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
 
                     <TableBody>
                         {declaracion.map((item) => (
-                            <TableRow key={item._id} className="hover:bg-gray-50">
+                            <TableRow key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                                 <TableCell><Checkbox /></TableCell>
-                                <TableCell>{item.datosPersonales.nombres} {item.datosPersonales.paterno} {item.datosPersonales.materno}</TableCell>
-                                <TableCell>{item.datosPersonales.documentoIdentidad.numero}</TableCell>
-                                <TableCell>{item.datosPersonales.celular}</TableCell>
-                                <TableCell>{item.datosPersonales.correoElectronico}</TableCell>
+                                <TableCell className="dark:text-white">
+                                    {item.datosPersonales.nombres} {item.datosPersonales.paterno} {item.datosPersonales.materno}
+                                </TableCell>
+                                <TableCell className="dark:text-white">{item.datosPersonales.documentoIdentidad.numero}</TableCell>
+                                <TableCell className="dark:text-white">{item.datosPersonales.celular}</TableCell>
+                                <TableCell className="dark:text-white">{item.datosPersonales.correoElectronico}</TableCell>
                                 <TableCell className="text-right">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" className="h-8 w-8 p-0">
                                                 <span className="sr-only">Abrir menú</span>
-                                                <MoreHorizontal className="h-4 w-4" />
+                                                <MoreHorizontal className="h-4 w-4 dark:text-white" />
                                             </Button>
                                         </DropdownMenuTrigger>
 
-                                        <DropdownMenuContent align="end">
+                                        <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:text-white">
                                             <DropdownMenuLabel>Acciones</DropdownMenuLabel>
 
+                                            {/* PDF */}
+                                            <DropdownMenuItem
+                                                className="flex items-center gap-2 w-full dark:text-white"
+                                                onClick={() => handleOpenPdf(item._id)}
+                                            >
+                                                <FileText className="h-4 w-4" /> PDF
+                                            </DropdownMenuItem>
+
                                             {/* Editar */}
-                                            <DropdownMenuItem className="flex items-center gap-2 w-full">
+                                            <DropdownMenuItem className="flex items-center gap-2 w-full dark:text-white">
                                                 <Link
                                                     href={`/declaracion-jurada/${item._id}/edit`}
                                                     className="flex items-center gap-2 w-full"
@@ -98,7 +122,7 @@ export function DeclaracionTable({ declaracion }: { declaracion: DeclaracionData
                                                 </Link>
                                             </DropdownMenuItem>
 
-                                            <DropdownMenuSeparator />
+                                            <DropdownMenuSeparator className="dark:border-gray-600" />
 
                                             {/* Eliminar */}
                                             <DropdownMenuItem
@@ -120,6 +144,13 @@ export function DeclaracionTable({ declaracion }: { declaracion: DeclaracionData
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Modal PDF */}
+            <ModalPDF
+                open={openPdf.open}
+                onClose={() => setOpenPdf({ open: false, pdfUrl: "" })}
+                pdfUrl={openPdf.pdfUrl}
+            />
         </div>
     );
 }
