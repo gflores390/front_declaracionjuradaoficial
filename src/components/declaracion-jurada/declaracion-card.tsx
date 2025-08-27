@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { DeclaracionData } from "@/app/declaracion-jurada/declaracion-jurada.interface";
 import {
