@@ -101,8 +101,76 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     <CardTitle>I. Datos Personales</CardTitle>
                     <CardDescription>Información básica del declarante</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 ">
+                    <div className="flex flex-col gap-1 flex-1">
+                        <label className="font-medium text-sm">Tipo de Documento</label>
+                        <Select
+                            {...register("datosPersonales.documentoIdentidad.tipo", {
+                                required: "Debe seleccionar un tipo de documento"
+                            })}
+                            defaultValue={declaracion?.datosPersonales.documentoIdentidad.tipo || ""}
+                            onValueChange={(v) => setValue("datosPersonales.documentoIdentidad.tipo", v, { shouldValidate: true })}
+                        >
+                            <SelectTrigger className="w-full md:w-64">
+                                <SelectValue placeholder="Tipo Documento" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="CI">CI</SelectItem>
+                                <SelectItem value="Pasaporte">Pasaporte</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.datosPersonales?.documentoIdentidad?.tipo && (
+                            <span className="text-red-500 text-sm">
+                                {errors.datosPersonales.documentoIdentidad.tipo.message}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-1 flex-[2]">
+                        <label className="font-medium text-sm">Número de Documento</label>
+                        <Input
+                            {...register("datosPersonales.documentoIdentidad.numero", {
+                                required: "El número de documento es obligatorio",
+                                pattern: {
+                                    value: /^\d+$/,
+                                    message: "El número de documento debe contener solo números",
+                                },
+                                minLength: {
+                                    value: 5,
+                                    message: "El número de documento debe tener al menos 5 dígitos",
+                                },
+                            })}
+                            placeholder="Número Documento"
+                        />
+                        {errors.datosPersonales?.documentoIdentidad?.numero && (
+                            <span className="text-red-500 text-sm">
+                                {errors.datosPersonales.documentoIdentidad.numero.message}
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex flex-col gap-1 flex-1">
+                        <label className="font-medium text-sm">Expedido</label>
+                        <Select
+                            defaultValue={declaracion?.datosPersonales.documentoIdentidad.expedido}
+                            onValueChange={(v) => setValue("datosPersonales.documentoIdentidad.expedido", v)}
+                        >
+                            <SelectTrigger className="w-full md:w-64">
+                                <SelectValue placeholder="Expedido en" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="LP">La Paz</SelectItem>
+                                <SelectItem value="CB">Cochabamba</SelectItem>
+                                <SelectItem value="SC">Santa Cruz</SelectItem>
+                                <SelectItem value="OR">Oruro</SelectItem>
+                                <SelectItem value="PT">Potosí</SelectItem>
+                                <SelectItem value="CH">Chuquisaca</SelectItem>
+                                <SelectItem value="BN">Beni</SelectItem>
+                                <SelectItem value="PA">Pando</SelectItem>
+                                <SelectItem value="TJ">Tarija</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Nombres</label>
                         <Input
                             {...register("datosPersonales.nombres", {
                                 required: "El nombre es obligatorio",
@@ -119,6 +187,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     </div>
 
                     <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Apellido Paterno</label>
                         <Input
                             {...register("datosPersonales.paterno", {
                                 pattern: {
@@ -134,6 +203,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     </div>
 
                     <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Apellido Materno</label>
                         <Input
                             {...register("datosPersonales.materno", {
                                 pattern: {
@@ -149,6 +219,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     </div>
 
                     <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Apellido de Casada</label>
                         <Input
                             {...register("datosPersonales.apellidoCasada", {
                                 pattern: {
@@ -164,6 +235,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     </div>
 
                     <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Fecha de Nacimiento</label>
                         <Input
                             type="date"
                             {...register("datosPersonales.fechaNacimiento", {
@@ -188,79 +260,30 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             <span className="text-red-500 text-sm">{errors.datosPersonales.fechaNacimiento.message}</span>
                         )}
                     </div>
-
-
                     <div className="flex flex-col gap-1">
-                        <Select
-                            {...register("datosPersonales.documentoIdentidad.tipo", {
-                                required: "Debe seleccionar un tipo de documento"
-                            })}
-                            defaultValue={declaracion?.datosPersonales.documentoIdentidad.tipo || ""}
-                            onValueChange={(v) => setValue("datosPersonales.documentoIdentidad.tipo", v, { shouldValidate: true })}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Tipo Doc" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="CI">CI</SelectItem>
-                                <SelectItem value="Pasaporte">Pasaporte</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {errors.datosPersonales?.documentoIdentidad?.tipo && (
-                            <span className="text-red-500 text-sm">
-                                {errors.datosPersonales.documentoIdentidad.tipo.message}
-                            </span>
-                        )}
+                        <label className="font-medium text-sm">Zona</label>
+                        <Input {...register("datosPersonales.direccion.zona")} placeholder="Zona" />
                     </div>
-
                     <div className="flex flex-col gap-1">
-                        <Input
-                            {...register("datosPersonales.documentoIdentidad.numero", {
-                                required: "El número de documento es obligatorio",
-                                pattern: {
-                                    value: /^\d+$/,
-                                    message: "El número de documento debe contener solo números",
-                                },
-                                minLength: {
-                                    value: 5,
-                                    message: "El número de documento debe tener al menos 5 dígitos",
-                                },
-                            })}
-                            placeholder="Número Documento"
-                        />
-                        {errors.datosPersonales?.documentoIdentidad?.numero && (
-                            <span className="text-red-500 text-sm">
-                                {errors.datosPersonales.documentoIdentidad.numero.message}
-                            </span>
-                        )}
+                        <label className="font-medium text-sm">Avenida</label>
+                        <Input {...register("datosPersonales.direccion.avenida")} placeholder="Avenida" />
                     </div>
-
-                    <Select
-                        defaultValue={declaracion?.datosPersonales.documentoIdentidad.expedido}
-                        onValueChange={(v) => setValue("datosPersonales.documentoIdentidad.expedido", v)}
-                    >
-                        <SelectTrigger><SelectValue placeholder="Expedido en" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="LP">La Paz</SelectItem>
-                            <SelectItem value="CB">Cochabamba</SelectItem>
-                            <SelectItem value="SC">Santa Cruz</SelectItem>
-                            <SelectItem value="OR">Oruro</SelectItem>
-                            <SelectItem value="PT">Potosí</SelectItem>
-                            <SelectItem value="CH">Chuquisaca</SelectItem>
-                            <SelectItem value="BN">Beni</SelectItem>
-                            <SelectItem value="PA">Pando</SelectItem>
-                            <SelectItem value="TJ">Tarija</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <Input {...register("datosPersonales.direccion.zona")} placeholder="Zona" />
-                    <Input {...register("datosPersonales.direccion.avenida")} placeholder="Avenida" />
-                    <Input {...register("datosPersonales.direccion.calle")} placeholder="Calle" />
-                    <Input {...register("datosPersonales.direccion.numeroDomicilio")} placeholder="Número Domicilio" />
-                    <Input {...register("datosPersonales.telefonoDomicilio")} placeholder="Teléfono Domicilio" />
+                    <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Calle</label>
+                        <Input {...register("datosPersonales.direccion.calle")} placeholder="Calle" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Número Domicilio</label>
+                        <Input {...register("datosPersonales.direccion.numeroDomicilio")} placeholder="Número Domicilio" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Teléfono Domicilio</label>
+                        <Input {...register("datosPersonales.telefonoDomicilio")} placeholder="Teléfono Domicilio" />
+                    </div>
 
                     {/* Celular con error */}
                     <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Celular</label>
                         <Input
                             {...register("datosPersonales.celular", {
                                 required: "El celular es obligatorio",
@@ -278,6 +301,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
 
                     {/* Correo con error */}
                     <div className="flex flex-col gap-1">
+                        <label className="font-medium text-sm">Correo Electrónico</label>
                         <Input
                             type="email"
                             {...register("datosPersonales.correoElectronico", {
@@ -424,6 +448,6 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     <Link>Atras</Link>
                 </Button>
             </div>
-        </form>
+        </form >
     );
 };

@@ -18,15 +18,15 @@ export default async function NuevaDeclaracionJurada({ params }: Params) {
     }
     return (
         <div className="max-w-[1100px] w-full p-6 mx-auto">
-            <Card>
-                <CardHeader>
+            {/* <Card> */}
+            {/* <CardHeader>
                     <CardTitle>Nueva Declaración Jurada</CardTitle>
                     <CardDescription>Complete el siguiente formulario para crear una nueva declaración jurada.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <DeclaracionForm declaracion={data} />
-                </CardContent>
-            </Card>
-        </div>
+                </CardHeader> */}
+            {/* <CardContent> */}
+            <DeclaracionForm declaracion={data} />
+            {/* </CardContent> */}
+            {/* </Card> */}
+        </div >
     );
 }
