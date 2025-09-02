@@ -22,18 +22,23 @@ interface DatosPersonales {
     celular: string;
     correoElectronico: string;
 }
+interface Horarios {
+    dia?: string;
+    inicio?: string;
+    fin?: string;
+    orden?: number;
+}
 interface ActividadDocenteAdministrativaData {
     dependenciaDecanaturaArea?: string;
     carreraInstituto?: string;
     materiaCargo?: string;
     categoriaDocenteAdministrativo?: string;
-    cargaHoraria?: string;
-    dias?: string;
-    horasHorarios?: string;
+    cargaHoraria?: number;
+    horarios?: Horarios[];
     totalGanadoBs?: number;
 }
 interface ActividadDocenteAdministrativa {
-    data: ActividadDocenteAdministrativaData;
+    data: ActividadDocenteAdministrativaData[];
     bonoDeAntiguedad?: number;
     totalGanadoTotalBs?: number;
 }
@@ -41,8 +46,8 @@ interface ActividadExtraUniversitaria {
     nombreInstitucion?: string;
     nivelCargoOcupacional?: string;
     actividadPublicaPrivada?: string;
-    diasLaborales?: string;
-    tiempoCompletoCargaHoraria?: string;
+    tiempoCompletoCargaHoraria?: number;
+    horarios?: Horarios[];
     totalGanado?: number;
 }
 interface ActividadAdministrativa {
@@ -50,8 +55,8 @@ interface ActividadAdministrativa {
     nivelCargoOcupacional?: string;
     actividadPublicaPrivada?: string;
     modalidadContrato?: string;
-    diasHorarioFunciones?: string;
-    cargaHoraria?: string;
+    cargaHoraria?: number;
+    horarios?: Horarios[];
     totalGanado?: number;
 }
 interface ProfesionalJubilado {
@@ -66,27 +71,44 @@ interface OtraInformacion {
     documentoRespaldo?: string;
     montoDescuento?: number;
 }
+interface CompatibilidadSumatoria {
+    CompatibilidadHorario?: string;
+    CompatibilidadCargaHorario?: string;
+    CompatibilidadSalarial?: string;
+    sumatoriaTotal?: number;
+}
+
+
+class DatosFormularioDeclaracionDto {
+    fechaDeclarada?: Date;
+    remuneracionSector?: number;
+}
+
 
 
 export interface DeclaracionData {
     _id: string;
     datosPersonales: DatosPersonales;
-    actividadDocenteAdministrativa: ActividadDocenteAdministrativa[];
+    actividadDocenteAdministrativa: ActividadDocenteAdministrativa;
     actividadExtraUniversitaria: ActividadExtraUniversitaria[];
     actividadAdministrativa: ActividadAdministrativa[];
     profesionalJubilado: ProfesionalJubilado[];
     otraInformacion: OtraInformacion[];
+    compatibilidadSumatoria?: CompatibilidadSumatoria;
+    datosFormulario?: DatosFormularioDeclaracionDto;
     __v: number;
 }
 
 export interface Inputs {
     _id: string;
     datosPersonales: DatosPersonales;
-    actividadDocenteAdministrativa: ActividadDocenteAdministrativa[];
+    actividadDocenteAdministrativa: ActividadDocenteAdministrativa;
     actividadExtraUniversitaria: ActividadExtraUniversitaria[];
     actividadAdministrativa: ActividadAdministrativa[];
     profesionalJubilado: ProfesionalJubilado[];
     otraInformacion: OtraInformacion[];
+    compatibilidadSumatoria?: CompatibilidadSumatoria;
+    datosFormulario?: DatosFormularioDeclaracionDto;
     __v: number;
 }
 

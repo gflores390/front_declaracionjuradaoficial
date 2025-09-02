@@ -15,10 +15,21 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
     // Para navegar
     const router = useRouter();
 
+    // Convertimos la fechaNacimiento a YYYY-MM-DD
+    const defaultDatosPersonales = declaracion?.datosPersonales
+        ? {
+            ...declaracion.datosPersonales,
+            fechaNacimiento: declaracion.datosPersonales.fechaNacimiento
+                ? new Date(declaracion.datosPersonales.fechaNacimiento).toISOString().split("T")[0]
+                : "",
+        }
+        : {};
+
     const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<Inputs>({
         defaultValues: {
-            datosPersonales: declaracion?.datosPersonales || {},
-            actividadDocenteAdministrativa: declaracion?.actividadDocenteAdministrativa || [],
+            // datosPersonales: declaracion?.datosPersonales || {},
+            datosPersonales: defaultDatosPersonales,
+            actividadDocenteAdministrativa: declaracion?.actividadDocenteAdministrativa || {},
             actividadExtraUniversitaria: declaracion?.actividadExtraUniversitaria || [],
             actividadAdministrativa: declaracion?.actividadAdministrativa || [],
             profesionalJubilado: declaracion?.profesionalJubilado || [],
@@ -27,7 +38,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
     });
 
     const { fields: docenteFields, append: appendDocente, remove: removeDocente } =
-        useFieldArray({ control, name: "actividadDocenteAdministrativa" });
+        useFieldArray({ control, name: "actividadDocenteAdministrativa.data" });
 
     const { fields: extraFields, append: appendExtra, remove: removeExtra } =
         useFieldArray({ control, name: "actividadExtraUniversitaria" });
@@ -74,6 +85,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
     };
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        console.log(data);
         try {
             let response: any;
             if (declaracion?._id) {
@@ -328,18 +340,17 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                 <CardContent>
                     {docenteFields.map((field, index) => (
                         <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-xl mb-4">
-                            <Input {...register(`actividadDocenteAdministrativa.${index}.data.dependenciaDecanaturaArea`)} placeholder="Dependencia" />
-                            <Input {...register(`actividadDocenteAdministrativa.${index}.data.carreraInstituto`)} placeholder="Carrera" />
-                            <Input {...register(`actividadDocenteAdministrativa.${index}.data.materiaCargo`)} placeholder="Materia/Cargo" />
-                            <Input {...register(`actividadDocenteAdministrativa.${index}.data.categoriaDocenteAdministrativo`)} placeholder="Categoría" />
-                            <Input {...register(`actividadDocenteAdministrativa.${index}.data.cargaHoraria`)} placeholder="Carga Horaria" />
-                            <Input {...register(`actividadDocenteAdministrativa.${index}.data.dias`)} placeholder="Días" />
-                            <Input {...register(`actividadDocenteAdministrativa.${index}.data.horasHorarios`)} placeholder="Horarios" />
-                            <Input type="number" {...register(`actividadDocenteAdministrativa.${index}.data.totalGanadoBs`, { setValueAs: v => Number(v) })} placeholder="Total Ganado Bs" />
+                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.dependenciaDecanaturaArea`)} placeholder="Dependencia" />
+                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.carreraInstituto`)} placeholder="Carrera" />
+                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.materiaCargo`)} placeholder="Materia/Cargo" />
+                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.categoriaDocenteAdministrativo`)} placeholder="Categoría" />
+                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
+                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.horarios`)} placeholder="Horarios" />
+                            <Input type="number" {...register(`actividadDocenteAdministrativa.data.${index}.totalGanadoBs`, { setValueAs: v => Number(v) })} placeholder="Total Ganado Bs" />
                             <Button type="button" variant="destructive" onClick={() => removeDocente(index)}>Eliminar</Button>
                         </div>
                     ))}
-                    <Button type="button" onClick={() => appendDocente({ data: {} })}>+ Añadir actividad docente</Button>
+                    <Button type="button" onClick={() => appendDocente({})}>+ Añadir actividad docente</Button>
                 </CardContent>
             </Card>
 
@@ -360,8 +371,8 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                     <SelectItem value="privada">Privada</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Input {...register(`actividadExtraUniversitaria.${index}.diasLaborales`)} placeholder="Días Laborales" />
                             <Input {...register(`actividadExtraUniversitaria.${index}.tiempoCompletoCargaHoraria`)} placeholder="Carga Horaria" />
+                            <Input {...register(`actividadExtraUniversitaria.${index}.horarios`)} placeholder="Horarios" />
                             <Input type="number" {...register(`actividadExtraUniversitaria.${index}.totalGanado`, { setValueAs: v => Number(v) })} placeholder="Total Ganado" />
                             <Button type="button" variant="destructive" onClick={() => removeExtra(index)}>Eliminar</Button>
                         </div>
@@ -388,8 +399,8 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                 </SelectContent>
                             </Select>
                             <Input {...register(`actividadAdministrativa.${index}.modalidadContrato`)} placeholder="Contrato" />
-                            <Input {...register(`actividadAdministrativa.${index}.diasHorarioFunciones`)} placeholder="Días/Horario" />
                             <Input {...register(`actividadAdministrativa.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
+                            <Input {...register(`actividadAdministrativa.${index}.horarios`)} placeholder="Horarios" />
                             <Input type="number" {...register(`actividadAdministrativa.${index}.totalGanado`, { setValueAs: v => Number(v) })} placeholder="Total Ganado" />
                             <Button type="button" variant="destructive" onClick={() => removeAdmin(index)}>Eliminar</Button>
                         </div>
