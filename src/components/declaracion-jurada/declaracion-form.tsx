@@ -111,7 +111,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             defaultValue={declaracion?.datosPersonales.documentoIdentidad.tipo || ""}
                             onValueChange={(v) => setValue("datosPersonales.documentoIdentidad.tipo", v, { shouldValidate: true })}
                         >
-                            <SelectTrigger className="w-full md:w-64">
+                            <SelectTrigger className="w-full md:w-full">
                                 <SelectValue placeholder="Tipo Documento" />
                             </SelectTrigger>
                             <SelectContent>
@@ -154,7 +154,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             defaultValue={declaracion?.datosPersonales.documentoIdentidad.expedido}
                             onValueChange={(v) => setValue("datosPersonales.documentoIdentidad.expedido", v)}
                         >
-                            <SelectTrigger className="w-full md:w-64">
+                            <SelectTrigger className="w-full md:w-full">
                                 <SelectValue placeholder="Expedido en" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="LP">La Paz</SelectItem>
