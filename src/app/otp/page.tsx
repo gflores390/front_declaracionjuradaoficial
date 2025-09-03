@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 const URL = process.env.NEXT_PUBLIC_API_URL
-const otpStore = new Map<string, string>()
+
 
 export default function OtpPage() {
     const router = useRouter()
@@ -47,33 +47,51 @@ export default function OtpPage() {
     };
 
     // ---- Paso 2: Enviar OTP ----
-    const sendOtp = () => {
-        if (!maskedPhone) return
-        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString()
-        otpStore.set(ci, generatedOtp)
-        toast.info(`OTP generado para CI ${ci} (número: ${maskedPhone}): ${generatedOtp}`)
-        console.log(`OTP generado para CI ${ci} (número: ${maskedPhone}): ${generatedOtp}`)
-        setStep("otp")
-        setOtp("")
-        setTimer(60) // 60 segundos de validez del OTP
+    const sendOtp = async () => {
+        try {
+            const response = await fetch(`${URL}/declaracion-jurada/otp/enviar`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ celular: maskedPhone }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                toast.error(data.message || "Error al enviar OTP");
+                return;
+            }
+            setTimer(data.otpInfo.duracionSegundos)
+            setStep("otp");
+        } catch (error) {
+
+        }
+
     }
 
     // ---- Paso 3: Verificar OTP ----
-    const handleVerifyOtp = () => {
-        const storedOtp = otpStore.get(ci)
-        if (!storedOtp) return toast.error("OTP no encontrado, vuelva a enviar")
-        if (storedOtp !== otp) return toast.error("OTP inválido")
+    const handleVerifyOtp = async () => {
+        try {
+            const response = await fetch(`${URL}/declaracion-jurada/otp/verificar`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ codigo: otp }),
+            });
 
-        toast.success("Acceso concedido")
-        otpStore.delete(ci)
-        router.push(`/declaracion-jurada/${userId}/edit`)
-        // Reset
-        setStep("ci")
-        setCi("")
-        setMaskedPhone("")
-        setOtp("")
-        setUserId("")
-    }
+            const data = await response.json();
+
+            if (!response.ok || !data.valido) {
+                return toast.error(data.message || "OTP inválido, vuelva a enviar");
+            }
+
+            toast.success("Acceso concedido");
+            router.push(`/declaracion-jurada/${userId}/edit`);
+        } catch (error: any) {
+            toast.error(error.message || "Error inesperado al verificar OTP");
+        }
+    };
 
     // ---- Cronómetro ----
     useEffect(() => {
