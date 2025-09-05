@@ -80,3 +80,54 @@ export const updateDeclaracion = async (id: string, declaracion: declaracionForm
         throw error;
     }
 }
+
+// Buscar usuario por CI
+export const searchUserByCI = async (ci: string) => {
+    try {
+        const res = await fetch(`${URL}/declaracion-jurada/persona/${ci}`, {
+            cache: "no-store",
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Error al buscar usuario");
+        return data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+
+// Enviar OTP
+export const sendOtpApi = async (celular: string) => {
+    try {
+        const response = await fetch(`${URL}/declaracion-jurada/otp/enviar`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ celular }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Error al enviar OTP");
+        return data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Verificar OTP
+export const verifyOtpApi = async (codigo: string) => {
+    try {
+        const response = await fetch(`${URL}/declaracion-jurada/otp/verificar`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ codigo }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Error al verificar OTP");
+        return data;
+    } catch (error) {
+        throw error;
+    }
+};

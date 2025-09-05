@@ -40,3 +40,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 git checkout -b dev origin/dev
 ```
 
+```
+docker network create db_network --subnet=172.19.0.0/24
+docker network create web_network --subnet=172.19.1.0/24
+```

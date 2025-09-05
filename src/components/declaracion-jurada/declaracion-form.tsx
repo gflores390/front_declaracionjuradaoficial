@@ -29,7 +29,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
         defaultValues: {
             // datosPersonales: declaracion?.datosPersonales || {},
             datosPersonales: defaultDatosPersonales,
-            actividadDocenteAdministrativa: declaracion?.actividadDocenteAdministrativa || {},
+            actividadDocente: declaracion?.actividadDocente || [],
             actividadExtraUniversitaria: declaracion?.actividadExtraUniversitaria || [],
             actividadAdministrativa: declaracion?.actividadAdministrativa || [],
             profesionalJubilado: declaracion?.profesionalJubilado || [],
@@ -38,7 +38,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
     });
 
     const { fields: docenteFields, append: appendDocente, remove: removeDocente } =
-        useFieldArray({ control, name: "actividadDocenteAdministrativa.data" });
+        useFieldArray({ control, name: "actividadDocente" });
 
     const { fields: extraFields, append: appendExtra, remove: removeExtra } =
         useFieldArray({ control, name: "actividadExtraUniversitaria" });
@@ -87,7 +87,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         console.log(data);
         try {
-            let response: any;
+            let response: Inputs;
             if (declaracion?._id) {
                 response = await updateDeclaracion(declaracion._id, limpiarPayload(data));
                 toast.success("Se actualizó la declaración jurada");
@@ -340,13 +340,14 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                 <CardContent>
                     {docenteFields.map((field, index) => (
                         <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-xl mb-4">
-                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.dependenciaDecanaturaArea`)} placeholder="Dependencia" />
-                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.carreraInstituto`)} placeholder="Carrera" />
-                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.materiaCargo`)} placeholder="Materia/Cargo" />
-                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.categoriaDocenteAdministrativo`)} placeholder="Categoría" />
-                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
-                            <Input {...register(`actividadDocenteAdministrativa.data.${index}.horarios`)} placeholder="Horarios" />
-                            <Input type="number" {...register(`actividadDocenteAdministrativa.data.${index}.totalGanadoBs`, { setValueAs: v => Number(v) })} placeholder="Total Ganado Bs" />
+                            <Input {...register(`actividadDocente.${index}.dependenciaDecanaturaArea`)} placeholder="Dependencia" />
+                            <Input {...register(`actividadDocente.${index}.carreraInstituto`)} placeholder="Carrera" />
+                            <Input {...register(`actividadDocente.${index}.materiaSigla`)} placeholder="Materia/Cargo" />
+                            <Input {...register(`actividadDocente.${index}.categoriaDocente`)} placeholder="Categoría" />
+                            <Input {...register(`actividadDocente.${index}.cargo`)} placeholder="cargo" />
+                            <Input {...register(`actividadDocente.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
+                            <Input {...register(`actividadDocente.${index}.horarios`)} placeholder="Horarios" />
+                            <Input type="number" {...register(`actividadDocente.${index}.totalGanadoBs`, { setValueAs: v => Number(v) })} placeholder="Total Ganado Bs" />
                             <Button type="button" variant="destructive" onClick={() => removeDocente(index)}>Eliminar</Button>
                         </div>
                     ))}
@@ -371,8 +372,8 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                     <SelectItem value="privada">Privada</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Input {...register(`actividadExtraUniversitaria.${index}.tiempoCompletoCargaHoraria`)} placeholder="Carga Horaria" />
                             <Input {...register(`actividadExtraUniversitaria.${index}.horarios`)} placeholder="Horarios" />
+                            <Input {...register(`actividadExtraUniversitaria.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
                             <Input type="number" {...register(`actividadExtraUniversitaria.${index}.totalGanado`, { setValueAs: v => Number(v) })} placeholder="Total Ganado" />
                             <Button type="button" variant="destructive" onClick={() => removeExtra(index)}>Eliminar</Button>
                         </div>
@@ -436,7 +437,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                 <CardContent>
                     {otraInfoFields.map((field, index) => (
                         <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-xl mb-4">
-                            <Textarea {...register(`otraInformacion.${index}.descripcionAdecuacionSalarial`)} placeholder="Descripción" />
+                            <Textarea {...register(`otraInformacion.${index}.descripcionAdecuacion`)} placeholder="Descripción" />
                             <Input {...register(`otraInformacion.${index}.institucion`)} placeholder="Institución" />
                             <Input {...register(`otraInformacion.${index}.documentoRespaldo`)} placeholder="Documento" />
                             <Input type="number" {...register(`otraInformacion.${index}.montoDescuento`, { setValueAs: v => Number(v) })} placeholder="Monto Descuento" />

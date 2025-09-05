@@ -1,3 +1,4 @@
+
 interface DocumentoIdentidad {
     tipo: string;
     numero: string;
@@ -22,43 +23,44 @@ interface DatosPersonales {
     celular: string;
     correoElectronico: string;
 }
+
 interface Horarios {
     dia?: string;
     inicio?: string;
     fin?: string;
     orden?: number;
 }
-interface ActividadDocenteAdministrativaData {
+
+interface ActividadDocente {
     dependenciaDecanaturaArea?: string;
     carreraInstituto?: string;
-    materiaCargo?: string;
-    categoriaDocenteAdministrativo?: string;
+    materiaSigla?: string;
+    categoriaDocente?: string;
+    cargo?: string;
     cargaHoraria?: number;
     horarios?: Horarios[];
     totalGanadoBs?: number;
 }
-interface ActividadDocenteAdministrativa {
-    data: ActividadDocenteAdministrativaData[];
-    bonoDeAntiguedad?: number;
-    totalGanadoTotalBs?: number;
-}
+
 interface ActividadExtraUniversitaria {
     nombreInstitucion?: string;
     nivelCargoOcupacional?: string;
     actividadPublicaPrivada?: string;
-    tiempoCompletoCargaHoraria?: number;
     horarios?: Horarios[];
+    cargaHoraria?: number;
     totalGanado?: number;
 }
+
 interface ActividadAdministrativa {
     nombreInstitucion?: string;
     nivelCargoOcupacional?: string;
     actividadPublicaPrivada?: string;
     modalidadContrato?: string;
-    cargaHoraria?: number;
     horarios?: Horarios[];
+    cargaHoraria?: number;
     totalGanado?: number;
 }
+
 interface ProfesionalJubilado {
     nombreInstitucion?: string;
     nivelCargo?: string;
@@ -66,49 +68,46 @@ interface ProfesionalJubilado {
     montoTitular?: number;
 }
 interface OtraInformacion {
-    descripcionAdecuacionSalarial?: string;
+    descripcionAdecuacion?: string;
     institucion?: string;
     documentoRespaldo?: string;
     montoDescuento?: number;
 }
+
 interface CompatibilidadSumatoria {
-    CompatibilidadHorario?: string;
-    CompatibilidadCargaHorario?: string;
-    CompatibilidadSalarial?: string;
+    compatibilidadHorario?: string;
+    compatibilidadCargaHorario?: string;
+    compatibilidadSalarial?: string;
     sumatoriaTotal?: number;
 }
 
 
-class DatosFormularioDeclaracionDto {
+interface DatosFormularioDeclaracion {
     fechaDeclarada?: Date;
     remuneracionSector?: number;
 }
-
-
-
 export interface DeclaracionData {
     _id: string;
     datosPersonales: DatosPersonales;
-    actividadDocenteAdministrativa: ActividadDocenteAdministrativa;
+    actividadDocente: ActividadDocente[];
     actividadExtraUniversitaria: ActividadExtraUniversitaria[];
     actividadAdministrativa: ActividadAdministrativa[];
     profesionalJubilado: ProfesionalJubilado[];
     otraInformacion: OtraInformacion[];
     compatibilidadSumatoria?: CompatibilidadSumatoria;
-    datosFormulario?: DatosFormularioDeclaracionDto;
+    datosFormulario?: DatosFormularioDeclaracion;
     __v: number;
 }
-
 export interface Inputs {
     _id: string;
     datosPersonales: DatosPersonales;
-    actividadDocenteAdministrativa: ActividadDocenteAdministrativa;
+    actividadDocente: ActividadDocente[];
     actividadExtraUniversitaria: ActividadExtraUniversitaria[];
     actividadAdministrativa: ActividadAdministrativa[];
     profesionalJubilado: ProfesionalJubilado[];
     otraInformacion: OtraInformacion[];
     compatibilidadSumatoria?: CompatibilidadSumatoria;
-    datosFormulario?: DatosFormularioDeclaracionDto;
+    datosFormulario?: DatosFormularioDeclaracion;
     __v: number;
 }
 
