@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sun, Moon, Menu } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/ui/app-sidebar";
+import Image from "next/image";
 
 
 
@@ -37,8 +38,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen bg-background text-foreground`}
       >
+
         {/* PROVIDER del sidebar */}
         <SidebarProvider>
           {/* SIDEBAR a la izquierda */}
@@ -56,9 +58,14 @@ export default function RootLayout({
                   <SidebarTrigger>
                     <Menu className="w-6 h-6 text-gray-800 dark:text-gray-200 cursor-pointer" />
                   </SidebarTrigger>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-
-                  </h1>
+                  <Image
+                    src="/images/logo-posgrado.png"
+                    alt="Logo"
+                    height={32}
+                    width={120}
+                    className="h-8 w-auto"
+                    priority
+                  />
                 </div>
 
                 {/* Acciones del header */}

@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <>
       <DeclaracionPrincipal />
-      <OtpComponent />
+      {/* <OtpComponent /> */}
       {/* <FeaturesDeclaracion /> */}
       {/* <DeclaracionForm /> */}
     </>
