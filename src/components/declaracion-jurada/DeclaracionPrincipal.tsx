@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function DeclaracionPrincipal() {
     return (
-        <section className="bg-white dark:bg-gray-900 py-24 text-center">
+        <section className="py-24 text-center">
             {/* Título principal */}
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
                 Sistema de Declaración Jurada

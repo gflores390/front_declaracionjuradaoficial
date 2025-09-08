@@ -92,24 +92,24 @@ export default function OtpComponent() {
 
     // ---- Render ----
     return (
-        <Card className="w-[400px] shadow-lg dark:shadow-gray-700 bg-white dark:bg-gray-800 transition-colors duration-300 align-middle mx-auto mt-10">
+        <Card className="w-[400px] shadow-lg dark:shadow-gray-700 transition-colors duration-300 align-middle mx-auto mt-10">
             {/* Paso CI */}
             {step === "ci" && (
                 <>
                     <CardHeader>
                         <CardTitle className="text-center text-xl text-gray-900 dark:text-gray-100 transition-colors duration-300">
-                            Buscar usuario
+                            Buscar mi Carnet de Identidad
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4">
                         {!allowCreate ? (
                             <>
                                 <Input
-                                    type="number"
+                                    type="text"
                                     placeholder="Ingresa tu CI"
                                     value={ci}
                                     onChange={(e) => setCi(e.target.value)}
-                                    className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 transition-colors duration-300"
+                                    className="bg-gray-100 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 transition-colors duration-300"
                                 />
                                 {ciError && (
                                     <Alert className="border-red-400 bg-red-50 text-red-800 dark:bg-red-900/40 dark:text-red-200">

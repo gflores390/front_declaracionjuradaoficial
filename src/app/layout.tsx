@@ -57,7 +57,7 @@ export default function RootLayout({
                     <Menu className="w-6 h-6 text-gray-800 dark:text-gray-200 cursor-pointer" />
                   </SidebarTrigger>
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Posgrado (UPEA)
+
                   </h1>
                 </div>
 

@@ -33,14 +33,14 @@ export function AppSidebar() {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                        <SidebarMenuItem>
+                        {/* <SidebarMenuItem>
                             <SidebarMenuButton asChild>
                                 <Link href="/declaracion-jurada">
                                     <FileText className="w-4 h-4 mr-2" />
                                     Declaración
                                 </Link>
                             </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        </SidebarMenuItem> */}
                         {/* <SidebarMenuItem>
                             <SidebarMenuButton asChild>
                                 <Link href="/contacto">
