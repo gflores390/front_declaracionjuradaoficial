@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { OtpInput } from "@/components/declaracion-jurada/otp-input"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { searchUserByCI, sendOtpApi, verifyOtpApi } from "../../app/declaracion-jurada/declaracion-jurada.api"
+import { searchUserByCI, sendOtpApi, verificacionCi, verifyOtpApi } from "../../app/declaracion-jurada/declaracion-jurada.api"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { AlertTriangle, FilePlus } from "lucide-react"
+import { set } from "react-hook-form"
 
 export default function OtpComponent() {
     const router = useRouter()
@@ -21,6 +22,9 @@ export default function OtpComponent() {
     const [userId, setUserId] = useState("")
     const [allowCreate, setAllowCreate] = useState(false)
     const [ciError, setCiError] = useState("")
+    // Nuevo estado para celular ingresado por el usuario
+    const [phone, setPhone] = useState("")
+    const [persona, setPersona] = useState("")
 
     // ---- Paso 1: Buscar usuario por CI ----
     const handleSearch = async ({ ci }: { ci: string }) => {
@@ -37,10 +41,11 @@ export default function OtpComponent() {
         }
 
         try {
-            const data = await searchUserByCI(ci)
-            if (data.datosPersonales?.celular) {
-                setMaskedPhone(data.datosPersonales.celular)
-                setUserId(data._id)
+            const data = await verificacionCi(ci)
+            if (data.numero) {
+                setMaskedPhone(data.numero)
+                setUserId(data.declaracion)
+                setPersona(data.persona)
                 setStep("confirm")
                 setAllowCreate(false)
             } else {
@@ -54,7 +59,10 @@ export default function OtpComponent() {
     // ---- Paso 2: Enviar OTP ----
     const sendOtp = async () => {
         try {
-            const data = await sendOtpApi(maskedPhone)
+            if (!phone.trim()) {
+                return toast.error("Por favor ingresa tu número de celular")
+            }
+            const data = await sendOtpApi(phone, persona)
             setTimer(data.otpInfo.duracionSegundos)
             setStep("otp")
         } catch (error: any) {
@@ -171,8 +179,16 @@ export default function OtpComponent() {
                     </CardHeader>
                     <CardContent className="flex flex-col items-center gap-4">
                         <p className="text-gray-600 dark:text-gray-300 transition-colors duration-300">
-                            Número encontrado: <b>{maskedPhone.replace(/^(\d{2})\d+(\d{2})$/, "$1XXXX$2")}</b>
+                            Número encontrado: <b>{maskedPhone}</b>
                         </p>
+
+                        <Input
+                            type="tel"
+                            placeholder="Ingresa tu número de celular"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="bg-gray-100 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600 transition-colors duration-300"
+                        />
                     </CardContent>
                     <CardFooter>
                         <Button className="w-full" onClick={sendOtp}>
@@ -192,7 +208,7 @@ export default function OtpComponent() {
                     </CardHeader>
                     <CardContent className="flex flex-col items-center gap-4">
                         <p className="text-gray-600 dark:text-gray-300 text-center transition-colors duration-300">
-                            Código enviado a {maskedPhone.replace(/^(\d{2})\d+(\d{2})$/, "$1XXXX$2")}
+                            Código enviado a {maskedPhone}
                         </p>
                         <OtpInput length={6} onChange={setOtp} />
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 transition-colors duration-300">
