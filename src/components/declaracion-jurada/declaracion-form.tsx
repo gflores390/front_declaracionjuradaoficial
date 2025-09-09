@@ -9,11 +9,15 @@ import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { DeclaracionData, Inputs } from "@/app/declaracion-jurada/declaracion-jurada.interface";
 import { createDeclaracionJurada, updateDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
-import { Link } from "lucide-react";
+import { Link, Plus } from "lucide-react";
+import { InfoCards } from "./info-card";
+import { useState } from "react";
+import { actividadDocenteJson } from "@/app/declaracion-jurada/actividad-docente";
 
 export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData }) => {
     // Para navegar
     const router = useRouter();
+    const [openPdf, setOpenPdf] = useState<{ open: boolean; pdfUrl: string }>({ open: false, pdfUrl: "" });
 
     // Convertimos la fechaNacimiento a YYYY-MM-DD
     const defaultDatosPersonales = declaracion?.datosPersonales
@@ -96,17 +100,24 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                 response = await createDeclaracionJurada(payloadLimpio);
                 toast.success("Se creó la declaración jurada");
             }
+            handleOpenPdf(response._id);
             // Mensajes
-            router.push("/declaracion-jurada");
+            // router.push("/declaracion-jurada");
         } catch (error) {
             console.error("Error al enviar el formulario:", error);
             toast.error("Error al enviar el formulario");
         }
     };
 
+    const handleOpenPdf = (id: string) => {
+        const pdfUrl = `${process.env.NEXT_PUBLIC_API_URL}/declaracion-jurada/reporte/${id}`;
+        window.open(pdfUrl, "_blank"); // Abre el PDF en nueva pestaña
+        router.push("/"); // Redirige a la ruta principal
+    };
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
-
+            <InfoCards />
             {/* Datos Personales */}
             <Card>
                 <CardHeader>
@@ -333,25 +344,200 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
             </Card>
 
             {/* Actividad Docente/Administrativa */}
+
             <Card>
                 <CardHeader>
                     <CardTitle>II. Actividad Docente/Administrativa UPEA</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {docenteFields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-xl mb-4">
-                            <Input {...register(`actividadDocente.${index}.dependenciaDecanaturaArea`)} placeholder="Dependencia" />
-                            <Input {...register(`actividadDocente.${index}.carreraInstituto`)} placeholder="Carrera" />
-                            <Input {...register(`actividadDocente.${index}.materiaSigla`)} placeholder="Materia/Cargo" />
-                            <Input {...register(`actividadDocente.${index}.categoriaDocente`)} placeholder="Categoría" />
-                            <Input {...register(`actividadDocente.${index}.cargo`)} placeholder="cargo" />
-                            <Input {...register(`actividadDocente.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
-                            <Input {...register(`actividadDocente.${index}.horarios`)} placeholder="Horarios" />
-                            <Input type="number" {...register(`actividadDocente.${index}.totalGanadoBs`, { setValueAs: v => Number(v) })} placeholder="Total Ganado Bs" />
-                            <Button type="button" variant="destructive" onClick={() => removeDocente(index)}>Eliminar</Button>
+                        <div key={field.id} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 border p-4 rounded-xl mb-4">
+
+                            {/* Dependencia */}
+                            <div className="flex flex-col gap-1 w-full">
+                                <label className="font-medium text-sm">Dependencia, Decanatura, Área o Administrativa</label>
+                                <Select {...register(`actividadDocente.${index}.dependenciaDecanaturaArea`)}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona Dependencia" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {actividadDocenteJson.dependencia.map((opt, i) => (
+                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Carrera */}
+                            <div className="flex flex-col gap-1 w-full">
+                                <label className="font-medium text-sm">Carrera o Instituto</label>
+                                <Select {...register(`actividadDocente.${index}.carreraInstituto`)}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona Carrera" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {actividadDocenteJson.carrera.map((opt, i) => (
+                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Materia/Cargo Administrativo */}
+                            <div className="flex flex-col gap-1 w-full">
+                                <label className="font-medium text-sm">Materia/Sigla o cargo Administrativo</label>
+                                <Select {...register(`actividadDocente.${index}.materiaSigla`)}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona Materia/Cargo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {actividadDocenteJson.materia.map((opt, i) => (
+                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Categoría */}
+                            <div className="flex flex-col gap-1 w-full">
+                                <label className="font-medium text-sm">Categoría</label>
+                                <Select {...register(`actividadDocente.${index}.categoriaDocente`)}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona Categoría" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {actividadDocenteJson.categoria.map((opt, i) => (
+                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Cargo */}
+                            <div className="flex flex-col gap-1 w-full">
+                                <label className="font-medium text-sm">Cargo</label>
+                                <Select {...register(`actividadDocente.${index}.cargo`)}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona Cargo" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {actividadDocenteJson.cargo.map((opt, i) => (
+                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Carga Horaria */}
+                            <div className="flex flex-col gap-1 w-full">
+                                <label className="font-medium text-sm">Carga Horaria</label>
+                                <Select {...register(`actividadDocente.${index}.cargaHoraria`)}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecciona Carga Horaria" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {actividadDocenteJson.cargaHoraria.map((opt, i) => (
+                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Días y Horarios */}
+                            <div className="flex flex-col gap-2 w-full col-span-1 sm:col-span-2 lg:col-span-3">
+                                <label className="font-medium text-sm">Días y Horarios</label>
+                                {(field.horarios || []).map((h, hIndex) => (
+                                    <div key={hIndex} className="flex gap-2 items-end flex-wrap">
+
+                                        {/* Día */}
+                                        <Select
+                                            value={h.dia}
+                                            onValueChange={val =>
+                                                setValue(`actividadDocente.${index}.horarios.${hIndex}.dia`, val)
+                                            }
+                                        >
+                                            <SelectTrigger className="w-32">
+                                                <SelectValue placeholder="Día" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {actividadDocenteJson.dias.map((opt, i) => (
+                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        {/* Inicio */}
+                                        <Input
+                                            type="time"
+                                            value={h.inicio || ""}
+                                            onChange={e =>
+                                                setValue(`actividadDocente.${index}.horarios.${hIndex}.inicio`, e.target.value)
+                                            }
+                                            className="w-24"
+                                        />
+
+                                        {/* Fin */}
+                                        <Input
+                                            type="time"
+                                            value={h.fin || ""}
+                                            onChange={e =>
+                                                setValue(`actividadDocente.${index}.horarios.${hIndex}.fin`, e.target.value)
+                                            }
+                                            className="w-24"
+                                        />
+
+                                        {/* Eliminar día */}
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            onClick={() => {
+                                                const horariosCopy = [...(field.horarios || [])];
+                                                horariosCopy.splice(hIndex, 1);
+                                                setValue(`actividadDocente.${index}.horarios`, horariosCopy);
+                                            }}
+                                        >
+                                            X
+                                        </Button>
+                                    </div>
+                                ))}
+
+                                {/* Agregar día */}
+                                <Button
+                                    type="button"
+                                    onClick={() => {
+                                        const horariosCopy = [...(field.horarios || [])];
+                                        horariosCopy.push({ dia: "", inicio: "", fin: "", orden: horariosCopy.length + 1 });
+                                        setValue(`actividadDocente.${index}.horarios`, horariosCopy);
+                                    }}
+                                >
+                                    + Añadir Día
+                                </Button>
+                            </div>
+
+                            {/* Total Ganado Bs */}
+                            <div className="flex flex-col gap-1 w-full">
+                                <label className="font-medium text-sm">Total Ganado Bs</label>
+                                <Input
+                                    type="number"
+                                    className="w-full"
+                                    {...register(`actividadDocente.${index}.totalGanadoBs`, { setValueAs: v => Number(v) })}
+                                    placeholder="Total Ganado Bs"
+                                />
+                            </div>
+
+                            {/* Botón eliminar actividad docente */}
+                            <div className="col-span-1 sm:col-span-2 lg:col-span-3 flex justify-end mt-4 w-full">
+                                <Button type="button" variant="destructive" className="w-full" onClick={() => removeDocente(index)}>
+                                    Eliminar
+                                </Button>
+                            </div>
+
                         </div>
                     ))}
-                    <Button type="button" onClick={() => appendDocente({})}>+ Añadir actividad docente</Button>
+                    <Button type="button" onClick={() => appendDocente({})} className="w-full"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Añadir actividad docente</Button>
                 </CardContent>
             </Card>
 
@@ -451,15 +637,19 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
             </Card>
 
             {/* Submit */}
-            <div className="flex justify-between gap-4">
-                <Button type="submit">
+            <div className="sticky bottom-0 bg-transparent py-6 z-10 flex justify-center border-t">
+                <Button
+                    type="submit"
+                    className="px-10 py-4 text-lg font-bold rounded-md transition-all duration-200 flex items-center gap-2"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
                     {declaracion?._id ? 'Actualizar Declaración Jurada' : 'Crear Declaración Jurada'}
-                </Button>
-
-                <Button asChild variant="link">
-                    <Link>Atras</Link>
                 </Button>
             </div>
         </form >
     );
 };
+
+

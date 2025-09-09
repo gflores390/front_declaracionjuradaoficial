@@ -56,11 +56,14 @@ export default function DeclaracionPrincipal() {
                     transition={{ duration: 1, delay: 0.5 }}
                     className="w-full md:w-1/2 flex flex-col justify-center text-center md:text-left space-y-6"
                 >
-                    <p className="text-lg md:text-xl text-gray-800 dark:text-gray-200 font-medium leading-relaxed">
-                        FORMULARIO DE <span className="text-orange-600 dark:text-orange-500 font-semibold">DECLARACIÓN JURADA</span>
-                        <br />
-                        Plataforma oficial de la UPEA Posgrado La Paz, Bolivia. Permite registrar información confiable sobre asistencia, entrega de documentos y cumplimiento de normas académicas y administrativas.
+                    <p className="text-base md:text-lg lg:text-xl font-serif text-gray-900 dark:text-gray-100 leading-relaxed tracking-wide text-justify my-4">
+                        <span className="block text-center text-orange-600 dark:text-orange-500 font-bold uppercase text-lg md:text-xl lg:text-2xl mb-2">
+                            FORMULARIO DE DECLARACIÓN JURADA
+                        </span>
+                        presentada ante la UPEA - El Alto, La Paz, Bolivia, mediante la cual el/la suscrito/a, en su calidad de estudiante o cargo correspondiente, certifica la veracidad de la información proporcionada y se compromete a cumplir con las disposiciones institucionales vigentes.
                     </p>
+
+
 
                     {/* Componente OTP */}
                     <div className="mt-4">
