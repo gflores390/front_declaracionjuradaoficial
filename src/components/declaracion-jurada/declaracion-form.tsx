@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
+import { useForm, useFieldArray, SubmitHandler, Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ import { DeclaracionData, Inputs } from "@/app/declaracion-jurada/declaracion-ju
 import { createDeclaracionJurada, updateDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
 import { Link, Plus } from "lucide-react";
 import { InfoCards } from "./info-card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { actividadDocenteJson } from "@/app/declaracion-jurada/actividad-docente";
 
 export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData }) => {
@@ -82,11 +82,13 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                 const objLimpio = limpiarPayload(value);
                 if (Object.keys(objLimpio).length) resultado[key] = objLimpio;
             } else if (value !== undefined && value !== null && value !== "") {
+                if (value === "NINGUNA") return undefined;
                 resultado[key] = value;
             }
         }
         return resultado;
     };
+
 
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         console.log(data);
@@ -355,93 +357,172 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
 
                             {/* Dependencia */}
                             <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">Dependencia, Decanatura, Área o Administrativa</label>
-                                <Select {...register(`actividadDocente.${index}.dependenciaDecanaturaArea`)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona Dependencia" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {actividadDocenteJson.dependencia.map((opt, i) => (
-                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <label className="font-medium text-sm">
+                                    Dependencia, Decanatura, Área o Administrativa
+                                </label>
+
+                                <Controller
+                                    key={index}
+                                    name={`actividadDocente.${index}.dependenciaDecanaturaArea`}
+                                    control={control}
+                                    defaultValue={declaracion?.actividadDocente?.[index]?.dependenciaDecanaturaArea || ""}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value || ""}
+                                            onValueChange={(val) => field.onChange(val)}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue>{field.value || "Selecciona Dependencia"}</SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="NINGUNA">--Ninguna--</SelectItem>
+                                                {actividadDocenteJson.dependencia.map((opt, i) => (
+                                                    <SelectItem key={i} value={opt}>
+                                                        {opt}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+
                             </div>
+
 
                             {/* Carrera */}
                             <div className="flex flex-col gap-1 w-full">
                                 <label className="font-medium text-sm">Carrera o Instituto</label>
-                                <Select {...register(`actividadDocente.${index}.carreraInstituto`)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona Carrera" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {actividadDocenteJson.carrera.map((opt, i) => (
-                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Controller
+                                    key={index}
+                                    name={`actividadDocente.${index}.carreraInstituto`}
+                                    control={control}
+                                    defaultValue={declaracion?.actividadDocente?.[index]?.carreraInstituto || ""}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value || ""}
+                                            onValueChange={(val) => field.onChange(val)}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue>{field.value || "Selecciona Carrera"}</SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="NINGUNA">--Ninguna--</SelectItem>
+                                                {actividadDocenteJson.carrera.map((opt, i) => (
+                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
                             </div>
 
                             {/* Materia/Cargo Administrativo */}
                             <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">Materia/Sigla o cargo Administrativo</label>
-                                <Select {...register(`actividadDocente.${index}.materiaSigla`)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona Materia/Cargo" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {actividadDocenteJson.materia.map((opt, i) => (
-                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <label className="font-medium text-sm">Materia/Sigla o Cargo Administrativo</label>
+                                <Controller
+                                    key={index}
+                                    name={`actividadDocente.${index}.materiaSigla`}
+                                    control={control}
+                                    defaultValue={declaracion?.actividadDocente?.[index]?.materiaSigla || ""}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value || ""}
+                                            onValueChange={(val) => field.onChange(val)}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue>{field.value || "Selecciona Materia/Cargo"}</SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {actividadDocenteJson.materia.map((opt, i) => (
+                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
                             </div>
+
 
                             {/* Categoría */}
                             <div className="flex flex-col gap-1 w-full">
                                 <label className="font-medium text-sm">Categoría</label>
-                                <Select {...register(`actividadDocente.${index}.categoriaDocente`)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona Categoría" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {actividadDocenteJson.categoria.map((opt, i) => (
-                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Controller
+                                    key={index}
+                                    name={`actividadDocente.${index}.categoriaDocente`}
+                                    control={control}
+                                    defaultValue={declaracion?.actividadDocente?.[index]?.categoriaDocente || ""}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value || ""}
+                                            onValueChange={(val) => field.onChange(val)}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue>{field.value || "Selecciona Categoría"}</SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {actividadDocenteJson.categoria.map((opt, i) => (
+                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
                             </div>
+
 
                             {/* Cargo */}
                             <div className="flex flex-col gap-1 w-full">
                                 <label className="font-medium text-sm">Cargo</label>
-                                <Select {...register(`actividadDocente.${index}.cargo`)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona Cargo" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {actividadDocenteJson.cargo.map((opt, i) => (
-                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Controller
+                                    key={index}
+                                    name={`actividadDocente.${index}.cargo`}
+                                    control={control}
+                                    defaultValue={declaracion?.actividadDocente?.[index]?.cargo || ""}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value || ""}
+                                            onValueChange={(val) => field.onChange(val)}
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue>{field.value || "Selecciona Cargo"}</SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {actividadDocenteJson.cargo.map((opt, i) => (
+                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
                             </div>
+
 
                             {/* Carga Horaria */}
                             <div className="flex flex-col gap-1 w-full">
                                 <label className="font-medium text-sm">Carga Horaria</label>
-                                <Select {...register(`actividadDocente.${index}.cargaHoraria`)}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecciona Carga Horaria" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {actividadDocenteJson.cargaHoraria.map((opt, i) => (
-                                            <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Controller
+                                    key={index}
+                                    name={`actividadDocente.${index}.cargaHoraria`}
+                                    control={control}
+                                    defaultValue={declaracion?.actividadDocente?.[index]?.cargaHoraria || 0} // default numérico
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value?.toString() || ""} // convertimos a string para el Select
+                                            onValueChange={(val) => field.onChange(Number(val))} // convertimos a number
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue>{field.value?.toString() || "Selecciona Carga Horaria"}</SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {actividadDocenteJson.cargaHoraria.map((opt, i) => (
+                                                    <SelectItem key={i} value={opt.toString()}>{opt}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
                             </div>
+
 
                             {/* Días y Horarios */}
                             <div className="flex flex-col gap-2 w-full col-span-1 sm:col-span-2 lg:col-span-3">
