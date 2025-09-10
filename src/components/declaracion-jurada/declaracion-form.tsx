@@ -13,6 +13,7 @@ import { Link, Plus } from "lucide-react";
 import { InfoCards } from "./info-card";
 import { useEffect, useState } from "react";
 import { actividadDocenteJson } from "@/app/declaracion-jurada/actividad-docente";
+import { ActividadDocenteCard } from "./actividad-docente";
 
 export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData }) => {
     // Para navegar
@@ -55,6 +56,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
 
     const { fields: otraInfoFields, append: appendOtra, remove: removeOtra } =
         useFieldArray({ control, name: "otraInformacion" });
+
 
     const limpiarPayload = (payload: any): any => {
         const resultado: any = {};
@@ -346,284 +348,14 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
             </Card>
 
             {/* Actividad Docente/Administrativa */}
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>II. Actividad Docente/Administrativa UPEA</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {docenteFields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 border p-4 rounded-xl mb-4">
-
-                            {/* Dependencia */}
-                            <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">
-                                    Dependencia, Decanatura, Área o Administrativa
-                                </label>
-
-                                <Controller
-                                    key={index}
-                                    name={`actividadDocente.${index}.dependenciaDecanaturaArea`}
-                                    control={control}
-                                    defaultValue={declaracion?.actividadDocente?.[index]?.dependenciaDecanaturaArea || ""}
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value || ""}
-                                            onValueChange={(val) => field.onChange(val)}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue>{field.value || "Selecciona Dependencia"}</SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="NINGUNA">--Ninguna--</SelectItem>
-                                                {actividadDocenteJson.dependencia.map((opt, i) => (
-                                                    <SelectItem key={i} value={opt}>
-                                                        {opt}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-
-                            </div>
-
-
-                            {/* Carrera */}
-                            <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">Carrera o Instituto</label>
-                                <Controller
-                                    key={index}
-                                    name={`actividadDocente.${index}.carreraInstituto`}
-                                    control={control}
-                                    defaultValue={declaracion?.actividadDocente?.[index]?.carreraInstituto || ""}
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value || ""}
-                                            onValueChange={(val) => field.onChange(val)}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue>{field.value || "Selecciona Carrera"}</SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="NINGUNA">--Ninguna--</SelectItem>
-                                                {actividadDocenteJson.carrera.map((opt, i) => (
-                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                            </div>
-
-                            {/* Materia/Cargo Administrativo */}
-                            <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">Materia/Sigla o Cargo Administrativo</label>
-                                <Controller
-                                    key={index}
-                                    name={`actividadDocente.${index}.materiaSigla`}
-                                    control={control}
-                                    defaultValue={declaracion?.actividadDocente?.[index]?.materiaSigla || ""}
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value || ""}
-                                            onValueChange={(val) => field.onChange(val)}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue>{field.value || "Selecciona Materia/Cargo"}</SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {actividadDocenteJson.materia.map((opt, i) => (
-                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                            </div>
-
-
-                            {/* Categoría */}
-                            <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">Categoría</label>
-                                <Controller
-                                    key={index}
-                                    name={`actividadDocente.${index}.categoriaDocente`}
-                                    control={control}
-                                    defaultValue={declaracion?.actividadDocente?.[index]?.categoriaDocente || ""}
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value || ""}
-                                            onValueChange={(val) => field.onChange(val)}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue>{field.value || "Selecciona Categoría"}</SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {actividadDocenteJson.categoria.map((opt, i) => (
-                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                            </div>
-
-
-                            {/* Cargo */}
-                            <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">Cargo</label>
-                                <Controller
-                                    key={index}
-                                    name={`actividadDocente.${index}.cargo`}
-                                    control={control}
-                                    defaultValue={declaracion?.actividadDocente?.[index]?.cargo || ""}
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value || ""}
-                                            onValueChange={(val) => field.onChange(val)}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue>{field.value || "Selecciona Cargo"}</SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {actividadDocenteJson.cargo.map((opt, i) => (
-                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                            </div>
-
-
-                            {/* Carga Horaria */}
-                            <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">Carga Horaria</label>
-                                <Controller
-                                    key={index}
-                                    name={`actividadDocente.${index}.cargaHoraria`}
-                                    control={control}
-                                    defaultValue={declaracion?.actividadDocente?.[index]?.cargaHoraria || 0} // default numérico
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value?.toString() || ""} // convertimos a string para el Select
-                                            onValueChange={(val) => field.onChange(Number(val))} // convertimos a number
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue>{field.value?.toString() || "Selecciona Carga Horaria"}</SelectValue>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {actividadDocenteJson.cargaHoraria.map((opt, i) => (
-                                                    <SelectItem key={i} value={opt.toString()}>{opt}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                            </div>
-
-
-                            {/* Días y Horarios */}
-                            <div className="flex flex-col gap-2 w-full col-span-1 sm:col-span-2 lg:col-span-3">
-                                <label className="font-medium text-sm">Días y Horarios</label>
-                                {(field.horarios || []).map((h, hIndex) => (
-                                    <div key={hIndex} className="flex gap-2 items-end flex-wrap">
-
-                                        {/* Día */}
-                                        <Select
-                                            value={h.dia}
-                                            onValueChange={val =>
-                                                setValue(`actividadDocente.${index}.horarios.${hIndex}.dia`, val)
-                                            }
-                                        >
-                                            <SelectTrigger className="w-32">
-                                                <SelectValue placeholder="Día" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {actividadDocenteJson.dias.map((opt, i) => (
-                                                    <SelectItem key={i} value={opt}>{opt}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-
-                                        {/* Inicio */}
-                                        <Input
-                                            type="time"
-                                            value={h.inicio || ""}
-                                            onChange={e =>
-                                                setValue(`actividadDocente.${index}.horarios.${hIndex}.inicio`, e.target.value)
-                                            }
-                                            className="w-24"
-                                        />
-
-                                        {/* Fin */}
-                                        <Input
-                                            type="time"
-                                            value={h.fin || ""}
-                                            onChange={e =>
-                                                setValue(`actividadDocente.${index}.horarios.${hIndex}.fin`, e.target.value)
-                                            }
-                                            className="w-24"
-                                        />
-
-                                        {/* Eliminar día */}
-                                        <Button
-                                            type="button"
-                                            variant="destructive"
-                                            onClick={() => {
-                                                const horariosCopy = [...(field.horarios || [])];
-                                                horariosCopy.splice(hIndex, 1);
-                                                setValue(`actividadDocente.${index}.horarios`, horariosCopy);
-                                            }}
-                                        >
-                                            X
-                                        </Button>
-                                    </div>
-                                ))}
-
-                                {/* Agregar día */}
-                                <Button
-                                    type="button"
-                                    onClick={() => {
-                                        const horariosCopy = [...(field.horarios || [])];
-                                        horariosCopy.push({ dia: "", inicio: "", fin: "", orden: horariosCopy.length + 1 });
-                                        setValue(`actividadDocente.${index}.horarios`, horariosCopy);
-                                    }}
-                                >
-                                    + Añadir Día
-                                </Button>
-                            </div>
-
-                            {/* Total Ganado Bs */}
-                            <div className="flex flex-col gap-1 w-full">
-                                <label className="font-medium text-sm">Total Ganado Bs</label>
-                                <Input
-                                    type="number"
-                                    className="w-full"
-                                    {...register(`actividadDocente.${index}.totalGanadoBs`, { setValueAs: v => Number(v) })}
-                                    placeholder="Total Ganado Bs"
-                                />
-                            </div>
-
-                            {/* Botón eliminar actividad docente */}
-                            <div className="col-span-1 sm:col-span-2 lg:col-span-3 flex justify-end mt-4 w-full">
-                                <Button type="button" variant="destructive" className="w-full" onClick={() => removeDocente(index)}>
-                                    Eliminar
-                                </Button>
-                            </div>
-
-                        </div>
-                    ))}
-                    <Button type="button" onClick={() => appendDocente({})} className="w-full"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Añadir actividad docente</Button>
-                </CardContent>
-            </Card>
-
+            <ActividadDocenteCard
+                docenteFields={docenteFields}
+                removeDocente={removeDocente}
+                appendDocente={appendDocente}
+                control={control}
+            />
             {/* Actividad Extra Universitaria */}
-            <Card>
+            < Card >
                 <CardHeader>
                     <CardTitle>III. Actividad Extra Universitaria</CardTitle>
                 </CardHeader>
@@ -647,10 +379,10 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     ))}
                     <Button type="button" onClick={() => appendExtra({})}>+ Añadir actividad extra</Button>
                 </CardContent>
-            </Card>
+            </Card >
 
             {/* Actividad Administrativa */}
-            <Card>
+            < Card >
                 <CardHeader>
                     <CardTitle>IV. Actividad Administrativa Otras Instituciones</CardTitle>
                 </CardHeader>
@@ -675,10 +407,10 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     ))}
                     <Button type="button" onClick={() => appendAdmin({})}>+ Añadir actividad administrativa</Button>
                 </CardContent>
-            </Card>
+            </Card >
 
             {/* Profesional Jubilado */}
-            <Card>
+            < Card >
                 <CardHeader>
                     <CardTitle>V. Profesional Jubilado</CardTitle>
                 </CardHeader>
@@ -694,10 +426,10 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     ))}
                     <Button type="button" onClick={() => appendJubilado({})}>+ Añadir jubilación</Button>
                 </CardContent>
-            </Card>
+            </Card >
 
             {/* Otra Información */}
-            <Card>
+            < Card >
                 <CardHeader>
                     <CardTitle>VI. Otra Información</CardTitle>
                 </CardHeader>
@@ -715,10 +447,10 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                         + Añadir otra información
                     </Button>
                 </CardContent>
-            </Card>
+            </Card >
 
             {/* Submit */}
-            <div className="sticky bottom-0 bg-transparent py-6 z-10 flex justify-center border-t">
+            < div className="sticky bottom-0 bg-transparent py-6 z-10 flex justify-center border-t" >
                 <Button
                     type="submit"
                     className="px-10 py-4 text-lg font-bold rounded-md transition-all duration-200 flex items-center gap-2"
@@ -728,7 +460,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                     </svg>
                     {declaracion?._id ? 'Actualizar Declaración Jurada' : 'Crear Declaración Jurada'}
                 </Button>
-            </div>
+            </div >
         </form >
     );
 };
