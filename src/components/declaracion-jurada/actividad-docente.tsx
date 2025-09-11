@@ -286,10 +286,20 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                         control={control}
                         defaultValue={0}
                         render={({ field }) => (
-                            <Input type="number" {...field} placeholder="Total Ganado Bs" className="w-full" />
+                            <Input
+                                type="number"
+                                value={field.value ?? 0}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    field.onChange(value === "" ? 0 : Number(value));
+                                }}
+                                placeholder="Total Ganado Bs"
+                                className="w-full"
+                            />
                         )}
                     />
                 </div>
+
             </CardContent>
 
             {/* Botón eliminar actividad docente */}
