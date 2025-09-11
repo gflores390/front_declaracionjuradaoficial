@@ -16,6 +16,8 @@ import { actividadDocenteJson } from "@/app/declaracion-jurada/actividad-docente
 import { ActividadDocenteCard } from "./actividad-docente";
 import { ActividadExtraCard } from "./actividad-extra-universitaria";
 import { ActividadAdministrativaCard } from "./actividad-adminstrativa";
+import { ProfesionalJubiladoCard } from "./profesinal-jubilado";
+import { OtraInformacionCard } from "./otra-informacion";
 
 export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData }) => {
     // Para navegar
@@ -374,45 +376,20 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
             />
 
             {/* Profesional Jubilado */}
-            < Card >
-                <CardHeader>
-                    <CardTitle>V. Profesional Jubilado</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {jubiladoFields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-xl mb-4">
-                            <Input {...register(`profesionalJubilado.${index}.nombreInstitucion`)} placeholder="Institución" />
-                            <Input {...register(`profesionalJubilado.${index}.nivelCargo`)} placeholder="Cargo" />
-                            <Input type="date" {...register(`profesionalJubilado.${index}.fechaDeJubilacion`)} />
-                            <Input type="number" {...register(`profesionalJubilado.${index}.montoTitular`, { setValueAs: v => Number(v) })} placeholder="Monto Bs" />
-                            <Button type="button" variant="destructive" onClick={() => removeJubilado(index)}>Eliminar</Button>
-                        </div>
-                    ))}
-                    <Button type="button" onClick={() => appendJubilado({})}>+ Añadir jubilación</Button>
-                </CardContent>
-            </Card >
-
+            <ProfesionalJubiladoCard
+                control={control}
+                jubiladoFields={jubiladoFields}
+                appendJubilado={appendJubilado}
+                removeJubilado={removeJubilado}
+            />
             {/* Otra Información */}
-            < Card >
-                <CardHeader>
-                    <CardTitle>VI. Otra Información</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {otraInfoFields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-xl mb-4">
-                            <Textarea {...register(`otraInformacion.${index}.descripcionAdecuacion`)} placeholder="Descripción" />
-                            <Input {...register(`otraInformacion.${index}.institucion`)} placeholder="Institución" />
-                            <Input {...register(`otraInformacion.${index}.documentoRespaldo`)} placeholder="Documento" />
-                            <Input type="number" {...register(`otraInformacion.${index}.montoDescuento`, { setValueAs: v => Number(v) })} placeholder="Monto Descuento" />
-                            <Button type="button" variant="destructive" onClick={() => removeOtra(index)}>Eliminar</Button>
-                        </div>
-                    ))}
-                    <Button type="button" onClick={() => appendOtra({})}>
-                        + Añadir otra información
-                    </Button>
-                </CardContent>
-            </Card >
 
+            <OtraInformacionCard
+                control={control}
+                otraInfoFields={otraInfoFields}
+                appendOtra={appendOtra}
+                removeOtra={removeOtra}
+            />
             {/* Submit */}
             < div className="sticky bottom-0 bg-transparent py-6 z-10 flex justify-center border-t" >
                 <Button
