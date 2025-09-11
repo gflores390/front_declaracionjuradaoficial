@@ -14,6 +14,7 @@ import { InfoCards } from "./info-card";
 import { useEffect, useState } from "react";
 import { actividadDocenteJson } from "@/app/declaracion-jurada/actividad-docente";
 import { ActividadDocenteCard } from "./actividad-docente";
+import { ActividadExtraCard } from "./actividad-extra-universitaria";
 
 export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData }) => {
     // Para navegar
@@ -355,32 +356,13 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                 control={control}
             />
             {/* Actividad Extra Universitaria */}
-            < Card >
-                <CardHeader>
-                    <CardTitle>III. Actividad Extra Universitaria</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {extraFields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-xl mb-4">
-                            <Input {...register(`actividadExtraUniversitaria.${index}.nombreInstitucion`)} placeholder="Institución" />
-                            <Input {...register(`actividadExtraUniversitaria.${index}.nivelCargoOcupacional`)} placeholder="Cargo" />
-                            <Select defaultValue={field.actividadPublicaPrivada} onValueChange={(v) => setValue(`actividadExtraUniversitaria.${index}.actividadPublicaPrivada`, v)}>
-                                <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="publica">Pública</SelectItem>
-                                    <SelectItem value="privada">Privada</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Input {...register(`actividadExtraUniversitaria.${index}.horarios`)} placeholder="Horarios" />
-                            <Input {...register(`actividadExtraUniversitaria.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
-                            <Input type="number" {...register(`actividadExtraUniversitaria.${index}.totalGanado`, { setValueAs: v => Number(v) })} placeholder="Total Ganado" />
-                            <Button type="button" variant="destructive" onClick={() => removeExtra(index)}>Eliminar</Button>
-                        </div>
-                    ))}
-                    <Button type="button" onClick={() => appendExtra({})}>+ Añadir actividad extra</Button>
-                </CardContent>
-            </Card >
 
+            <ActividadExtraCard
+                control={control}
+                extraFields={extraFields}
+                appendExtra={appendExtra}
+                removeExtra={removeExtra}
+            />
             {/* Actividad Administrativa */}
             < Card >
                 <CardHeader>
