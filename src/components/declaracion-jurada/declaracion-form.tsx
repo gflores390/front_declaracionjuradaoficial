@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { actividadDocenteJson } from "@/app/declaracion-jurada/actividad-docente";
 import { ActividadDocenteCard } from "./actividad-docente";
 import { ActividadExtraCard } from "./actividad-extra-universitaria";
+import { ActividadAdministrativaCard } from "./actividad-adminstrativa";
 
 export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData }) => {
     // Para navegar
@@ -364,32 +365,13 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                 removeExtra={removeExtra}
             />
             {/* Actividad Administrativa */}
-            < Card >
-                <CardHeader>
-                    <CardTitle>IV. Actividad Administrativa Otras Instituciones</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {adminFields.map((field, index) => (
-                        <div key={field.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-4 rounded-xl mb-4">
-                            <Input {...register(`actividadAdministrativa.${index}.nombreInstitucion`)} placeholder="Institución" />
-                            <Input {...register(`actividadAdministrativa.${index}.nivelCargoOcupacional`)} placeholder="Cargo" />
-                            <Select defaultValue={field.actividadPublicaPrivada} onValueChange={(v) => setValue(`actividadAdministrativa.${index}.actividadPublicaPrivada`, v)}>
-                                <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="publica">Pública</SelectItem>
-                                    <SelectItem value="privada">Privada</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Input {...register(`actividadAdministrativa.${index}.modalidadContrato`)} placeholder="Contrato" />
-                            <Input {...register(`actividadAdministrativa.${index}.cargaHoraria`)} placeholder="Carga Horaria" />
-                            <Input {...register(`actividadAdministrativa.${index}.horarios`)} placeholder="Horarios" />
-                            <Input type="number" {...register(`actividadAdministrativa.${index}.totalGanado`, { setValueAs: v => Number(v) })} placeholder="Total Ganado" />
-                            <Button type="button" variant="destructive" onClick={() => removeAdmin(index)}>Eliminar</Button>
-                        </div>
-                    ))}
-                    <Button type="button" onClick={() => appendAdmin({})}>+ Añadir actividad administrativa</Button>
-                </CardContent>
-            </Card >
+
+            <ActividadAdministrativaCard
+                control={control}
+                adminFields={adminFields}
+                appendAdmin={appendAdmin}
+                removeAdmin={removeAdmin}
+            />
 
             {/* Profesional Jubilado */}
             < Card >
