@@ -71,9 +71,10 @@ export default function OtpComponent() {
     }
 
     // ---- Paso 3: Verificar OTP ----
-    const handleVerifyOtp = async () => {
+    const handleVerifyOtp = async (code?: string) => {
+        const otpToVerify = code ?? otp; // si no se pasa, usamos el estado
         try {
-            const data = await verifyOtpApi(otp)
+            const data = await verifyOtpApi(otpToVerify)
             if (!data.valido) {
                 return toast.error(data.message || "OTP inválido, vuelva a enviar")
             }
@@ -83,6 +84,7 @@ export default function OtpComponent() {
             toast.error(error.message || "Error inesperado al verificar OTP")
         }
     }
+
 
     // ---- Cronómetro ----
     useEffect(() => {
@@ -192,7 +194,7 @@ export default function OtpComponent() {
                     </CardContent>
                     <CardFooter>
                         <Button className="w-full" onClick={sendOtp}>
-                            Enviar OTP a WhatsApp
+                            Enviar Código a WhatsApp
                         </Button>
                     </CardFooter>
                 </>
@@ -203,16 +205,25 @@ export default function OtpComponent() {
                 <>
                     <CardHeader>
                         <CardTitle className="text-center text-xl text-gray-900 dark:text-gray-100 transition-colors duration-300">
-                            Ingresa el OTP
+                            Ingresa el Código
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center gap-4">
                         <p className="text-gray-600 dark:text-gray-300 text-center transition-colors duration-300">
                             Código enviado a {maskedPhone}
                         </p>
-                        <OtpInput length={6} onChange={setOtp} />
+                        <OtpInput
+                            length={6}
+                            onChange={(val) => {
+                                setOtp(val)
+                                if (val.length === 6) {
+                                    handleVerifyOtp(val) // pasamos directamente el valor completo
+                                }
+                            }}
+                        />
+
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 transition-colors duration-300">
-                            {timer > 0 ? `Reenviar OTP en ${timer}s` : "No recibiste el código? "}
+                            {timer > 0 ? `Reenviar el Código en ${timer}s` : "No recibiste el Código? "}
                             {timer <= 0 && (
                                 <Button variant="link" size="sm" onClick={handleResend}>
                                     Reenviar
@@ -221,7 +232,7 @@ export default function OtpComponent() {
                         </p>
                     </CardContent>
                     <CardFooter>
-                        <Button className="w-full" disabled={otp.length < 6} onClick={handleVerifyOtp}>
+                        <Button className="w-full" disabled={otp.length < 6} onClick={() => handleVerifyOtp()}>
                             Verificar
                         </Button>
                     </CardFooter>
