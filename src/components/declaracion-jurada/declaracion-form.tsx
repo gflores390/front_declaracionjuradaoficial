@@ -6,18 +6,16 @@ import { useForm, useFieldArray, SubmitHandler, Controller } from "react-hook-fo
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
 import { DeclaracionData, Inputs } from "@/app/declaracion-jurada/declaracion-jurada.interface";
 import { createDeclaracionJurada, updateDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
-import { Link, Plus } from "lucide-react";
 import { InfoCards } from "./info-card";
-import { useEffect, useState } from "react";
-import { actividadDocenteJson } from "@/app/declaracion-jurada/actividad-docente";
+import { useState } from "react";
 import { ActividadDocenteCard } from "./actividad-docente";
 import { ActividadExtraCard } from "./actividad-extra-universitaria";
 import { ActividadAdministrativaCard } from "./actividad-adminstrativa";
 import { ProfesionalJubiladoCard } from "./profesinal-jubilado";
 import { OtraInformacionCard } from "./otra-informacion";
+import MonthYearCard from "./mes-declarado";
 
 export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData }) => {
     // Para navegar
@@ -42,7 +40,8 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
             actividadExtraUniversitaria: declaracion?.actividadExtraUniversitaria || [],
             actividadAdministrativa: declaracion?.actividadAdministrativa || [],
             profesionalJubilado: declaracion?.profesionalJubilado || [],
-            otraInformacion: declaracion?.otraInformacion || []
+            otraInformacion: declaracion?.otraInformacion || [],
+            datosFormulario: declaracion?.datosFormulario || {},
         },
     });
 
@@ -126,6 +125,9 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
             <InfoCards />
+            <MonthYearCard />
+
+
             {/* Datos Personales */}
             <Card>
                 <CardHeader>
