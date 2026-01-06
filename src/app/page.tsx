@@ -5,12 +5,6 @@ import { DeclaracionForm } from "@/components/declaracion-jurada/declaracion-for
 import OtpComponent from "@/components/declaracion-jurada/otp-ci-whats"
 
 export default function Home() {
-  return (
-    <>
-      <DeclaracionPrincipal />
-      {/* <OtpComponent /> */}
-      {/* <FeaturesDeclaracion /> */}
-      {/* <DeclaracionForm /> */}
-    </>
-  )
+  return <DeclaracionPrincipal />
 }
+

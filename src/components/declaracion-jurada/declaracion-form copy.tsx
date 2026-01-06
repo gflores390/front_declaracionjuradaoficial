@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DeclaracionData, Inputs } from "@/app/declaracion-jurada/declaracion-jurada.interface";
 import { createDeclaracionJurada, updateDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
-import { InfoCards } from "./info-card";
 import { useState } from "react";
 import { ActividadDocenteCard } from "./actividad-docente";
 import { ActividadExtraCard } from "./actividad-extra-universitaria";
@@ -139,7 +138,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
 
     // ✅ CAMBIAR EL RETURN PRINCIPAL PARA DIVIDIR EN DOS COLUMNAS
     return (
- <div className="flex h-screen w-full bg-gray-50">
+ <div className="flex w-full bg-gray-50">
     
             {/* ✅ COLUMNA IZQUIERDA - FORMULARIO (OCUPA MITAD) */}
             <div className={`h-full overflow-y-auto bg-white ${
@@ -157,7 +156,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                 <p className="text-gray-600 text-sm">Complete todos los campos requeridos</p>
                             </div>
                             
-                            <Button
+                            {/* <Button
                                 type="button"
                                 variant="outline"
                                 onClick={() => setMostrarVistaPrevia(!mostrarVistaPrevia)}
@@ -179,12 +178,12 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                         Mostrar Vista Previa
                                     </>
                                 )}
-                            </Button>
+                            </Button> */}
                         </div>
                     </div>
           
                     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
-                        <InfoCards />
+                        {/* <InfoCards /> */}
                         
                         {/* Datos Personales */}
                         <Card>

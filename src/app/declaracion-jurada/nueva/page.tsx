@@ -1,8 +1,8 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DeclaracionData, Inputs } from "../declaracion-jurada.interface";
+import { DeclaracionData } from "../declaracion-jurada.interface";
 import { getDeclaracion } from "../declaracion-jurada.api";
 import { DeclaracionForm } from "@/components/declaracion-jurada/declaracion-form";
+import { obtenerSesion } from "@/lib/session";
+import { redirect } from 'next/navigation'
 
 interface Params {
     params: Promise<{
@@ -12,21 +12,31 @@ interface Params {
 
 export default async function NuevaDeclaracionJurada({ params }: Params) {
     const id = (await params)?.id;
-    let data: DeclaracionData | undefined;
-    if (id) {
-        data = await getDeclaracion(id);
+
+    // ✅ SI HAY ID, ES EDICIÓN -> VERIFICAR SESIÓN
+    if (id && id !== 'null') {
+        const session = await obtenerSesion()
+        
+        if (!session) {
+            redirect('/')
+        }
     }
-    return (
-        <div className="max-w-[1100px] w-full p-6 mx-auto">
-            {/* <Card> */}
-            {/* <CardHeader>
-                    <CardTitle>Nueva Declaración Jurada</CardTitle>
-                    <CardDescription>Complete el siguiente formulario para crear una nueva declaración jurada.</CardDescription>
-                </CardHeader> */}
-            {/* <CardContent> */}
-            <DeclaracionForm declaracion={data} />
-            {/* </CardContent> */}
-            {/* </Card> */}
-        </div >
-    );
+
+    let data: DeclaracionData | undefined = undefined;
+
+    if (id && id !== 'null') {
+        try {
+            data = await getDeclaracion(id);
+        } catch (error: any) {
+            console.warn("No se pudo obtener la declaración:", error.message);
+            data = undefined;
+        }
+    }
+
+    // ✅ RETORNAR DIRECTAMENTE EL COMPONENTE SIN WRAPPERS
+    return <DeclaracionForm declaracion={data} />;
 }
+
+// ✅ CONFIGURACIÓN PARA REVALIDACIÓN
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;

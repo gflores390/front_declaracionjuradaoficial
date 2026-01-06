@@ -1,114 +1,270 @@
-// src/components/declaracion-jurada/DeclaracionPrincipal.tsx
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import OtpComponent from "./otp-ci-whats";
 import { motion } from "framer-motion";
+import { Moon, Sun } from "lucide-react";
 
 export default function DeclaracionPrincipal() {
-    return (
-        <section className="relative py-24 px-6">
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-            {/* Glow sutil */}
-            <div className="absolute top-0 left-1/2 w-[300px] h-[300px] bg-blue-200 rounded-full filter blur-3xl opacity-5 -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
+  useEffect(() => {
+    const html = document.documentElement;
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(html.classList.contains("dark"));
+    });
+    observer.observe(html, { attributes: true, attributeFilter: ["class"] });
+    setIsDarkMode(html.classList.contains("dark"));
 
-            {/* Título principal */}
-            <motion.h1
-                initial={{ opacity: 0, y: -40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1 }}
-                className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 text-center mb-12"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-                UNIVERSIDAD PÚBLICA DE EL ALTO
-            </motion.h1>
+    // Detectar si es móvil/tablet (incluyendo iPad Pro)
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
 
-            {/* Layout dos columnas */}
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
+  // Determinar si la imagen decorativa está presente
+  const isDecorImagePresent = !isMobile;
 
-                {/* Logo con giro sutil en X */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, rotateX: [0, 8, 0] }}
-                    transition={{
-                        repeat: Infinity,
-                        repeatType: "loop",
-                        duration: 6,
-                        ease: "easeInOut",
-                    }}
-                    className="w-full md:w-1/2 flex justify-center items-center"
-                >
-                    <Image
-                        src="/images/logo-upea.png"
-                        alt="UPEA Posgrado"
-                        width={250}
-                        height={250}
-                        className="rounded-full shadow-lg"
-                    />
-                </motion.div>
+  return (
+    <div
+      className="fixed inset-0 w-screen h-screen bg-cover bg-center overflow-hidden transition-all duration-500"
+      style={{
+        backgroundImage: isDarkMode
+          ? "url('/images/fondo22.png')"
+          : "url('/images/fondo11.png')",
+      }}
+    >
 
-                {/* Contenido textual */}
-                <motion.div
-                    initial={{ opacity: 0, x: 30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 1, delay: 0.5 }}
-                    className="w-full md:w-1/2 flex flex-col justify-center text-center md:text-left space-y-6"
-                >
-                    <p className="text-base md:text-lg lg:text-xl font-serif text-gray-900 dark:text-gray-100 leading-relaxed tracking-wide text-justify my-4">
-                        <span className="block text-center text-orange-600 dark:text-orange-500 font-bold uppercase text-lg md:text-xl lg:text-2xl mb-2">
-                            FORMULARIO DE DECLARACIÓN JURADA
-                        </span>
-                        presentada ante la UPEA - El Alto, La Paz, Bolivia, mediante la cual el/la suscrito/a, en su calidad de estudiante o cargo correspondiente, certifica la veracidad de la información proporcionada y se compromete a cumplir con las disposiciones institucionales vigentes.
-                    </p>
+      {/* CONTENEDOR SUPERIOR - Logo y botón CON Z-INDEX ALTO */}
+      <div className={`absolute top-4 z-50 w-full px-4 ${isMobile ? 'flex justify-between items-center' : 'flex justify-between items-center px-8'}`}>
+        {/* Logo */}
+        <div className="z-50">
+          <Image
+            src="/images/logoblanco.png"
+            alt="Logo Posgrado"
+            width={isMobile ? 140 : 190}
+            height={isMobile ? 40 : 55}
+            className={`${isMobile ? "h-10" : "h-14"} w-auto`}
+            priority
+          />
+        </div>
 
+        {/* Botón modo oscuro - COLOR CONDICIONAL BASADO EN LA IMAGEN DECORATIVA */}
+        <Button
+          variant="ghost"
+          onClick={() => {
+            const html = document.documentElement;
+            html.classList.toggle("dark");
+            setIsDarkMode(html.classList.contains("dark"));
+          }}
+          className="transition-transform duration-300 hover:scale-110 p-2 bg-transparent hover:bg-transparent z-50"
+          aria-label="Toggle Dark Mode"
+        >
+          {isDarkMode ? (
+            <Sun className={`${isMobile ? "w-7 h-7" : "w-8 h-8"} text-yellow-400`} /> 
+          ) : (
+            <Moon className={`${isMobile ? "w-7 h-7" : "w-8 h-8"} ${
+              isDecorImagePresent ? "text-gray-400" : "text-white"
+            }`} />
+          )}
+        </Button>
+      </div>
 
+      {/* Imagen decorativa - Solo en desktop */}
+      {isDecorImagePresent && (
+        <Image
+          src="/images/fonfo1.png"
+          alt="Decoración derecha"
+          width={600}
+          height={1000}
+          className="hidden md:block pointer-events-none z-10 opacity-100"
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            height: '100%',
+            width: 'auto',
+            objectFit: 'cover',
+            objectPosition: 'right center',
+            filter: 'drop-shadow(-40px 0 60px rgba(255, 255, 255, 0.4))',
+          }}
+        />
+      )}
 
-                    {/* Componente OTP */}
-                    <div className="mt-4">
-                        <OtpComponent />
-                    </div>
-                </motion.div>
-            </div>
+      {/* CONTENIDO PRINCIPAL */}
+      <div className={`absolute inset-0 z-20 flex flex-col justify-center items-center px-4 sm:px-6 md:px-8 ${
+        isMobile ? 'text-center' : 'lg:items-start lg:text-left lg:px-12'
+      }`}>
+        
+        {/* Título principal */}
+        <motion.h1
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          className={`font-bold mb-4 ${
+            isMobile 
+              ? 'text-2xl sm:text-3xl md:text-4xl max-w-md md:max-w-2xl' 
+              : 'text-4xl md:text-5xl lg:text-6xl max-w-3xl'
+          }`}
+          style={{
+            fontFamily: "'Public Sans', sans-serif",
+            lineHeight: '1.1',
+          }}
+        >
+          <span className="text-white dark:text-transparent dark:bg-gradient-to-r dark:from-[#FFC800] dark:to-white dark:bg-clip-text">
+            ¡BIENVENIDO AL SISTEMA!
+          </span>
+        </motion.h1>
 
-            {/* Cards informativos */}
-            <div className="max-w-5xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[
+        {/* Subtítulo */}
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3 }}
+          className={`text-white font-medium mb-8 ${
+            isMobile 
+              ? 'text-sm sm:text-base md:text-lg max-w-xs sm:max-w-md' 
+              : 'text-lg md:text-xl lg:text-2xl max-w-xl'
+          }`}
+        >
+          Su información es importante. Acceda con su Cédula de Identidad para iniciar sesión en el sistema.
+        </motion.p>
 
-                    {
-                        title: "¿Qué es la Declaración Jurada?",
-                        description: "Es un documento legal mediante el cual docentes o personal académico certifican la veracidad de información relacionada con su desempeño, asistencia, entrega de documentos, cumplimiento de responsabilidades y otras obligaciones institucionales."
-                    },
-                    {
-                        title: "Importancia",
-                        description: "Asegura la transparencia y responsabilidad administrativa, facilita auditorías y controles internos, y sirve como respaldo legal ante cualquier verificación de cumplimiento de deberes dentro de instituciones públicas o privadas."
-                    },
-                    {
-                        title: "Beneficios",
-                        description: "Permite un registro formal y confiable de acciones y compromisos del personal, simplifica la supervisión de asistencia y desempeño, y contribuye a mantener altos estándares de integridad y profesionalismo en la gestión educativa."
-                    }
+        {/* Componente OTP */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className={`w-full ${
+            isMobile 
+              ? 'flex justify-center' 
+              : 'lg:flex lg:justify-start'
+          }`}
+        >
+          <div className={`${
+            isMobile 
+              ? 'w-full max-w-xs sm:max-w-sm md:max-w-md flex justify-center' 
+              : 'lg:w-auto'
+          }`}>
+            <OtpComponent />
+          </div>
+        </motion.div>
+      </div>
 
+      {/* Estilos CSS */}
+      <style jsx global>{`
+        /* Asegurar que body y html no tengan scroll */
+        html, body {
+          overflow: hidden !important;
+          height: 100vh !important;
+          width: 100vw !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
 
-                ].map((item, index) => (
-                    <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1, delay: 0.8 + index * 0.3 }}
-                    >
-                        <Card className="shadow-md hover:shadow-lg transition-shadow duration-500">
-                            <CardHeader>
-                                <CardTitle className="text-lg md:text-xl">{item.title}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <CardDescription className="text-gray-700 dark:text-gray-300">{item.description}</CardDescription>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                ))}
-            </div>
-        </section>
-    );
+        /* Asegurar que el root también ocupe toda la pantalla */
+        #__next, #root {
+          height: 100vh !important;
+          width: 100vw !important;
+          overflow: hidden !important;
+        }
+        
+        /* Asegurar que el botón de modo oscuro esté siempre al frente */
+        .dark-mode-button-container {
+          z-index: 1000 !important;
+          position: relative !important;
+        }
+        
+        .dark-mode-button {
+          z-index: 1001 !important;
+          position: relative !important;
+          background: transparent !important;
+          border: none !important;
+        }
+        
+        /* Color amarillo vibrante para el sol */
+        .sun-icon {
+          color: #fbbf24 !important;
+        }
+
+        /* Asegurar que la imagen decorativa esté detrás */
+        .decorative-image {
+          z-index: 5 !important;
+        }
+
+        /* Contenido principal detrás del header pero delante del fondo */
+        .main-content {
+          z-index: 20 !important;
+        }
+
+        /* Centrado perfecto para iPad Pro (768px - 1023px) */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .main-container {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+          }
+          
+          .title-container {
+            text-align: center !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 600px !important;
+          }
+          
+          .subtitle-container {
+            text-align: center !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 500px !important;
+            margin-bottom: 2.5rem !important;
+          }
+          
+          .otp-wrapper {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+          }
+          
+          .otp-component {
+            width: 100% !important;
+            max-width: 420px !important;
+            display: flex !important;
+            justify-content: center !important;
+          }
+        }
+
+        /* Para móviles pequeños */
+        @media (max-width: 767px) {
+          .otp-component {
+            max-width: 320px !important;
+          }
+        }
+
+        /* Para desktop */
+        @media (min-width: 1024px) {
+          .main-container {
+            align-items: flex-start !important;
+            text-align: left !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
 }

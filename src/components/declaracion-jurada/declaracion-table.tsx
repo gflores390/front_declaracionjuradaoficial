@@ -80,67 +80,91 @@ export function DeclaracionTable({ declaracion }: { declaracion: DeclaracionData
                     </TableHeader>
 
                     <TableBody>
-                        {declaracion.map((item) => (
-                            <TableRow key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                <TableCell><Checkbox /></TableCell>
-                                <TableCell className="dark:text-white">
-                                    {item.datosPersonales.nombres} {item.datosPersonales.paterno} {item.datosPersonales.materno}
-                                </TableCell>
-                                <TableCell className="dark:text-white">{item.datosPersonales.documentoIdentidad.numero}</TableCell>
-                                <TableCell className="dark:text-white">{item.datosPersonales.celular}</TableCell>
-                                <TableCell className="dark:text-white">{item.datosPersonales.correoElectronico}</TableCell>
-                                <TableCell className="text-right">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                <span className="sr-only">Abrir menú</span>
-                                                <MoreHorizontal className="h-4 w-4 dark:text-white" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
+                        {declaracion.map((item) => {
+                            // ✅ PROTECCIÓN CONTRA DATOS NULOS
+                            const dp = item.datosPersonales;
+                            
+                            // Si no hay datos personales, mostrar fila de error
+                            if (!dp) {
+                                return (
+                                    <TableRow key={item._id} className="bg-red-50 dark:bg-red-900/20">
+                                        <TableCell><Checkbox disabled /></TableCell>
+                                        <TableCell colSpan={5} className="text-red-600 dark:text-red-400">
+                                            ⚠️ Registro corrupto - Sin datos personales
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            }
+                            
+                            // ✅ Fila normal con datos completos
+                            return (
+                                <TableRow key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                                    <TableCell><Checkbox /></TableCell>
+                                    <TableCell className="dark:text-white">
+                                        {dp.nombres} {dp.paterno} {dp.materno}
+                                    </TableCell>
+                                    <TableCell className="dark:text-white">
+                                        {dp.documentoIdentidad?.numero || 'N/A'}
+                                    </TableCell>
+                                    <TableCell className="dark:text-white">
+                                        {dp.celular || 'N/A'}
+                                    </TableCell>
+                                    <TableCell className="dark:text-white">
+                                        {dp.correoElectronico || 'N/A'}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <span className="sr-only">Abrir menú</span>
+                                                    <MoreHorizontal className="h-4 w-4 dark:text-white" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
 
-                                        <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:text-white">
-                                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                            <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:text-white">
+                                                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
 
-                                            {/* PDF */}
-                                            <DropdownMenuItem
-                                                className="flex items-center gap-2 w-full dark:text-white"
-                                                onClick={() => handleOpenPdf(item._id)}
-                                            >
-                                                <FileText className="h-4 w-4" /> PDF
-                                            </DropdownMenuItem>
-
-                                            {/* Editar */}
-                                            <DropdownMenuItem className="flex items-center gap-2 w-full dark:text-white">
-                                                <Link
-                                                    href={`/declaracion-jurada/${item._id}/edit`}
-                                                    className="flex items-center gap-2 w-full"
-                                                    onClick={() => setLoadingButtons((prev) => ({ ...prev, [`edit-${item._id}`]: true }))}
+                                                {/* PDF */}
+                                                <DropdownMenuItem
+                                                    className="flex items-center gap-2 w-full dark:text-white"
+                                                    onClick={() => handleOpenPdf(item._id)}
                                                 >
-                                                    {loadingButtons[`edit-${item._id}`] && <Loader2 className="h-4 w-4 animate-spin" />}
-                                                    <Pencil className="h-4 w-4" />
-                                                    {loadingButtons[`edit-${item._id}`] ? "Cargando..." : "Editar"}
-                                                </Link>
-                                            </DropdownMenuItem>
+                                                    <FileText className="h-4 w-4" /> PDF
+                                                </DropdownMenuItem>
 
-                                            <DropdownMenuSeparator className="dark:border-gray-600" />
+                                                {/* Editar */}
+                                                <DropdownMenuItem className="flex items-center gap-2 w-full dark:text-white">
+                                                    <Link
+                                                        href={`/declaracion-jurada/${item._id}/edit`}
+                                                        className="flex items-center gap-2 w-full"
+                                                        onClick={() => setLoadingButtons((prev) => ({ ...prev, [`edit-${item._id}`]: true }))}
+                                                    >
+                                                        {loadingButtons[`edit-${item._id}`] && <Loader2 className="h-4 w-4 animate-spin" />}
+                                                        <Pencil className="h-4 w-4" />
+                                                        {loadingButtons[`edit-${item._id}`] ? "Cargando..." : "Editar"}
+                                                    </Link>
+                                                </DropdownMenuItem>
 
-                                            {/* Eliminar */}
-                                            <DropdownMenuItem
-                                                className="text-red-600 flex items-center gap-2"
-                                                onClick={() => handleDelete(item._id)}
-                                            >
-                                                {loadingButtons[`delete-${item._id}`] ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    <Trash className="h-4 w-4" />
-                                                )}
-                                                Eliminar
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                                <DropdownMenuSeparator className="dark:border-gray-600" />
+
+                                                {/* Eliminar */}
+                                                <DropdownMenuItem
+                                                    className="text-red-600 flex items-center gap-2"
+                                                    onClick={() => handleDelete(item._id)}
+                                                >
+                                                    {loadingButtons[`delete-${item._id}`] ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <Trash className="h-4 w-4" />
+                                                    )}
+                                                    Eliminar
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </div>

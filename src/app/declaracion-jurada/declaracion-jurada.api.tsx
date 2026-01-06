@@ -54,8 +54,13 @@ export const deleteDeclaracion = async (id: string): Promise<{ message: string }
 
 export const getDeclaracion = async (id: string): Promise<DeclaracionData> => {
     try {
+
         const response = await fetch(`${URL}/declaracion-jurada/${id}`);
+
+        console.log('Response status:', response);
         const data = await response.json();
+        
+        console.log('Response data:', data);
         if (!response.ok) throw new Error(data.message || "Error al obtener la Declaracion Jurada");
         return data;
     } catch (error) {
@@ -109,7 +114,6 @@ export const searchUserByCI = async (ci: string) => {
     }
 };
 
-
 // Enviar OTP
 export const sendOtpApi = async (celular: string, persona: string) => {
     try {
@@ -140,10 +144,21 @@ export const verifyOtpApi = async (codigo: string) => {
             },
             body: JSON.stringify({ codigo }),
         });
+        // const data = await response.json();
+        // if (!response.ok) throw new Error(data.message || "Error al verificar OTP");
+        // return data;
+
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Error al verificar OTP");
-        return data;
-    } catch (error) {
+            if (!response.ok) {
+                // En lugar de lanzar error, devolver objeto con valido: false
+                return { 
+                    valido: false, 
+                    message: data.message || "Error al verificar OTP" 
+                };
+            }
+            return data;
+    } 
+    catch (error) {
         throw error;
     }
 };

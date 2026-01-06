@@ -19,7 +19,7 @@ export default async function DeclaracionJurada({ searchParams }: Params) {
     console.log({ offset, limit });
     const { declaracionJurada, totalPages } = await getDeclaracionJurada({ offset, limit });
     return (
-        <div className="max-w-screen-lg mx-auto p-8">
+        <div className="max-w-full mx-auto p-8">
             {/* <header className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold">Declaración Jurada</h1>
                 <Button asChild>
