@@ -67,19 +67,18 @@ function RandomPerson() {
           <Image
             src={images[index]}
             alt="Persona Institucional"
-            // 1. CALIDAD: Usamos dimensiones reales altas para que Next.js genere un set de srcSet de alta densidad
             width={1800} 
             height={2400}
-            // 2. PRIORIDAD: 'quality={100}' evita la compresión agresiva y 'unoptimized' si las fotos ya están pesadas
-            quality={100}
+            quality={100} // Máxima calidad de Next.js
             priority
-            // 3. SHARPENING: Estilos CSS para mejorar la nitidez en navegadores
             className="object-contain h-[105vh] w-auto select-none scale-110 origin-bottom 
-                       drop-shadow-[0_10px_30px_rgba(0,0,0,0.3)] 
-                       antialiased"
+                       drop-shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
             style={{ 
-              imageRendering: 'smooth',
-              WebkitBackfaceVisibility: 'hidden', // Evita parpadeo y mejora suavizado en Chrome/Safari
+              // Cambiamos "smooth" por "auto" que es el estándar compatible con TS
+              imageRendering: 'auto', 
+              // Este truco mejora el suavizado en navegadores basados en Webkit (Chrome/Edge/Safari)
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'translate3d(0,0,0)' // Fuerza renderizado por hardware (GPU) para mayor nitidez
             }}
           />
         </motion.div>
