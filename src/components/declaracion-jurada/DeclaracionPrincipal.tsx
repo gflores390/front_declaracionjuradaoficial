@@ -19,7 +19,6 @@ export default function DeclaracionPrincipal() {
     observer.observe(html, { attributes: true, attributeFilter: ["class"] });
     setIsDarkMode(html.classList.contains("dark"));
 
-    // Detectar si es móvil/tablet (incluyendo iPad Pro)
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 1024);
     };
@@ -33,139 +32,228 @@ export default function DeclaracionPrincipal() {
     };
   }, []);
 
-  // Determinar si la imagen decorativa está presente
-  const isDecorImagePresent = !isMobile;
+  const toggleDarkMode = () => {
+    const html = document.documentElement;
+    html.classList.toggle("dark");
+    setIsDarkMode(html.classList.contains("dark"));
+  };
+function RandomPerson() {
+  const [index, setIndex] = useState(0);
+  const images = [
+    "/images/PER1.png",
+    "/images/PER2.png",
+    "/images/PER3.png",
+    "/images/PER4.png",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 4000); 
+    return () => clearInterval(interval);
+  }, [images.length]);
 
   return (
+    <div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[65vw] h-screen pointer-events-none overflow-hidden">
+      <div className="relative w-full h-full flex items-end justify-end pr-20 xl:pr-32">
+        <motion.div
+          key={images[index]}
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
+          className="relative w-full h-full flex items-end justify-end"
+        >
+          <Image
+            src={images[index]}
+            alt="Persona Institucional"
+            // 1. CALIDAD: Usamos dimensiones reales altas para que Next.js genere un set de srcSet de alta densidad
+            width={1800} 
+            height={2400}
+            // 2. PRIORIDAD: 'quality={100}' evita la compresión agresiva y 'unoptimized' si las fotos ya están pesadas
+            quality={100}
+            priority
+            // 3. SHARPENING: Estilos CSS para mejorar la nitidez en navegadores
+            className="object-contain h-[105vh] w-auto select-none scale-110 origin-bottom 
+                       drop-shadow-[0_10px_30px_rgba(0,0,0,0.3)] 
+                       antialiased"
+            style={{ 
+              imageRendering: 'smooth',
+              WebkitBackfaceVisibility: 'hidden', // Evita parpadeo y mejora suavizado en Chrome/Safari
+            }}
+          />
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+  return (
     <div
-      className="fixed inset-0 w-screen h-screen bg-cover bg-center overflow-hidden transition-all duration-500"
+      className="fixed inset-0 w-screen h-screen overflow-hidden transition-all duration-700"
       style={{
-        backgroundImage: isDarkMode
-          ? "url('/images/fondo22.png')"
-          : "url('/images/fondo11.png')",
+        background: isDarkMode
+          ? "linear-gradient(135deg, #1e3a8a 0%, #0f172a 50%, #1e3a8a 100%)"
+          : "linear-gradient(135deg, #eff6ff 0%, #F5F9FF 50%, #eff6ff 100%)",
       }}
     >
+      {/* IMAGEN DE FONDO - FONDO.png para PC, FONDOC.png para móvil/tablet */}
+      <div 
+        className="absolute inset-0 z-[1] bg-cover bg-center bg-no-repeat opacity-100"
+        style={{
+          backgroundImage: isMobile
+            ? "url(/images/FONDOC.png)"
+            : "url(/images/FONDO.png)",
+        }}
+      />
 
-      {/* CONTENEDOR SUPERIOR - Logo y botón CON Z-INDEX ALTO */}
-      <div className={`absolute top-4 z-50 w-full px-4 ${isMobile ? 'flex justify-between items-center' : 'flex justify-between items-center px-8'}`}>
+      {/* Elemento decorativo de fondo - Orbs institucionales */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-[5]">
+        {/* Orb 1 - Superior derecha (Azul) */}
+        <div 
+          className="absolute w-96 h-96 rounded-full opacity-15 dark:opacity-10"
+          style={{
+            background: 'radial-gradient(circle, #2563eb, transparent)',
+            top: '-10%',
+            right: '5%',
+            filter: 'blur(80px)',
+          }}
+        />
+        {/* Orb 2 - Centro derecha (Amarillo) */}
+        <div 
+          className="absolute w-80 h-80 rounded-full opacity-10 dark:opacity-5"
+          style={{
+            background: 'radial-gradient(circle, #fbbf24, transparent)',
+            top: '30%',
+            right: '-5%',
+            filter: 'blur(70px)',
+          }}
+        />
+        {/* Orb 3 - Inferior izquierda (Azul) */}
+        <div 
+          className="absolute w-72 h-72 rounded-full opacity-12 dark:opacity-5"
+          style={{
+            background: 'radial-gradient(circle, #1e40af, transparent)',
+            bottom: '10%',
+            left: '-5%',
+            filter: 'blur(70px)',
+          }}
+        />
+      </div>
+
+      {/* Decoración de líneas verticales a la derecha */}
+      <div className="hidden lg:block absolute right-0 top-0 h-full w-1 pointer-events-none z-[5]">
+        <div className="absolute right-12 top-0 h-full w-px bg-gradient-to-b from-blue-400 via-yellow-300 to-blue-400 opacity-20"></div>
+        <div className="absolute right-24 top-20 h-96 w-px bg-gradient-to-b from-transparent via-blue-300 to-transparent opacity-15"></div>
+      </div>
+
+      {/* Decoración flotante a la derecha */}
+      {!isMobile && (
+        <motion.div
+          className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none hidden lg:flex flex-col gap-6 z-[5]"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 4, repeat: Infinity }}
+        >
+          <div className="w-20 h-20 rounded-lg bg-blue-500 opacity-10 dark:opacity-5 rotate-12"></div>
+          <div className="w-16 h-16 rounded-full bg-yellow-400 opacity-12 dark:opacity-5"></div>
+          <div className="w-24 h-24 rounded-lg bg-blue-600 opacity-8 dark:opacity-3 -rotate-6"></div>
+        </motion.div>
+      )}
+
+      {/* CONTENEDOR SUPERIOR - Logo y botón */}
+      <div className="absolute top-0 z-50 w-full px-4 sm:px-8 py-4 md:py-6 flex justify-between items-center">
         {/* Logo */}
-        <div className="z-50">
+        <div className="z-50 flex items-center">
+          {/* MODO CLARO */}
+          <Image
+  src="/images/logoblanco.png"
+  alt="Logo Posgrado"
+  width={200} 
+  height={60}
+  className="h-auto 
+    /* Móvil: pequeño y centrado visualmente */
+    w-[35vw] max-w-[120px] 
+    /* Tablet/Laptop: Escala ligera */
+    md:w-[15vw] md:max-w-[140px] 
+    /* PC Monitor Normal: Tamaño profesional reducido */
+    lg:max-w-[160px] 
+    /* Pantallas muy grandes: No sobrepasa los 200px */
+    xl:max-w-[180px] 2xl:max-w-[200px] 
+    object-contain"
+  priority
+/>
+
+          {/* MODO OSCURO */}
           <Image
             src="/images/logoblanco.png"
-            alt="Logo Posgrado"
-            width={isMobile ? 140 : 190}
-            height={isMobile ? 40 : 55}
-            className={`${isMobile ? "h-10" : "h-14"} w-auto`}
+            alt="Logo Posgrado Blanco"
+            width={190}
+            height={55}
+            className="hidden dark:block h-10 md:h-14 w-auto object-contain"
             priority
           />
         </div>
-
-        {/* Botón modo oscuro - COLOR CONDICIONAL BASADO EN LA IMAGEN DECORATIVA */}
-        <Button
-          variant="ghost"
-          onClick={() => {
-            const html = document.documentElement;
-            html.classList.toggle("dark");
-            setIsDarkMode(html.classList.contains("dark"));
-          }}
-          className="transition-transform duration-300 hover:scale-110 p-2 bg-transparent hover:bg-transparent z-50"
-          aria-label="Toggle Dark Mode"
-        >
-          {isDarkMode ? (
-            <Sun className={`${isMobile ? "w-7 h-7" : "w-8 h-8"} text-yellow-400`} /> 
-          ) : (
-            <Moon className={`${isMobile ? "w-7 h-7" : "w-8 h-8"} ${
-              isDecorImagePresent ? "text-gray-400" : "text-white"
-            }`} />
-          )}
-        </Button>
       </div>
 
-      {/* Imagen decorativa - Solo en desktop */}
-      {isDecorImagePresent && (
-        <Image
-          src="/images/fonfo1.png"
-          alt="Decoración derecha"
-          width={600}
-          height={1000}
-          className="hidden md:block pointer-events-none z-10 opacity-100"
-          style={{
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            right: 0,
-            height: '100%',
-            width: 'auto',
-            objectFit: 'cover',
-            objectPosition: 'right center',
-            filter: 'drop-shadow(-40px 0 60px rgba(255, 255, 255, 0.4))',
-          }}
-        />
-      )}
-
       {/* CONTENIDO PRINCIPAL */}
-      <div className={`absolute inset-0 z-20 flex flex-col justify-center items-center px-4 sm:px-6 md:px-8 ${
-        isMobile ? 'text-center' : 'lg:items-start lg:text-left lg:px-12'
-      }`}>
+      <div className="absolute inset-0 z-20 flex flex-col justify-center items-center px-4 sm:px-6 md:px-8 lg:items-start lg:text-left lg:px-16">
         
         {/* Título principal */}
         <motion.h1
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className={`font-bold mb-4 ${
-            isMobile 
-              ? 'text-2xl sm:text-3xl md:text-4xl max-w-md md:max-w-2xl' 
-              : 'text-4xl md:text-5xl lg:text-6xl max-w-3xl'
-          }`}
-          style={{
-            fontFamily: "'Public Sans', sans-serif",
-            lineHeight: '1.1',
-          }}
-        >
-          <span className="text-white dark:text-transparent dark:bg-gradient-to-r dark:from-[#FFC800] dark:to-white dark:bg-clip-text">
-            ¡BIENVENIDO AL SISTEMA!
-          </span>
-        </motion.h1>
+  className="font-extrabold mb-5 text-center lg:text-left text-balance leading-tight
+    text-[1.8rem] 
+    sm:text-[2.2rem] 
+    md:text-[2.8rem] 
+    lg:text-[3.2rem] /* Tamaño moderado para PC */
+    xl:text-[3.5rem] 
+    2xl:text-[3.8rem]"
+>
+  <span className="text-yellow-400 ...">
+    Declaración Jurada
+  </span>
+</motion.h1>
 
-        {/* Subtítulo */}
+        {/* Descripción */}
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.3 }}
-          className={`text-white font-medium mb-8 ${
-            isMobile 
-              ? 'text-sm sm:text-base md:text-lg max-w-xs sm:max-w-md' 
-              : 'text-lg md:text-xl lg:text-2xl max-w-xl'
-          }`}
+          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+          className="
+            text-white dark:text-slate-400
+            mb-8
+            max-w-4xl
+            leading-relaxed
+            mx-auto lg:mx-0
+            font-light
+            text-justify
+          "
         >
-          Su información es importante. Acceda con su Cédula de Identidad para iniciar sesión en el sistema.
+          <strong className="block text-justify">
+            La información consignada en el presente formulario tiene carácter de
+            Declaración Jurada y será utilizada exclusivamente para fines administrativos
+            y de control institucional.
+          </strong>
+
+          <span className="block mt-4 text-center lg:text-left">
+            Acceda con su Cédula de Identidad para iniciar sesión y completar su declaración.
+          </span>
         </motion.p>
+
 
         {/* Componente OTP */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className={`w-full ${
-            isMobile 
-              ? 'flex justify-center' 
-              : 'lg:flex lg:justify-start'
-          }`}
+          transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+          className="w-full flex justify-center lg:justify-start"
         >
-          <div className={`${
-            isMobile 
-              ? 'w-full max-w-xs sm:max-w-sm md:max-w-md flex justify-center' 
-              : 'lg:w-auto'
-          }`}>
+          <div className="w-full max-w-[85vw] sm:max-w-[320px] lg:max-w-[340px] xl:max-w-[360px]">
             <OtpComponent />
           </div>
         </motion.div>
       </div>
 
-      {/* Estilos CSS */}
+      {/* Estilos CSS globales */}
       <style jsx global>{`
-        /* Asegurar que body y html no tengan scroll */
         html, body {
           overflow: hidden !important;
           height: 100vh !important;
@@ -174,97 +262,16 @@ export default function DeclaracionPrincipal() {
           padding: 0 !important;
         }
 
-        /* Asegurar que el root también ocupe toda la pantalla */
         #__next, #root {
           height: 100vh !important;
           width: 100vw !important;
           overflow: hidden !important;
         }
-        
-        /* Asegurar que el botón de modo oscuro esté siempre al frente */
-        .dark-mode-button-container {
-          z-index: 1000 !important;
-          position: relative !important;
-        }
-        
-        .dark-mode-button {
-          z-index: 1001 !important;
-          position: relative !important;
-          background: transparent !important;
-          border: none !important;
-        }
-        
-        /* Color amarillo vibrante para el sol */
-        .sun-icon {
-          color: #fbbf24 !important;
-        }
-
-        /* Asegurar que la imagen decorativa esté detrás */
-        .decorative-image {
-          z-index: 5 !important;
-        }
-
-        /* Contenido principal detrás del header pero delante del fondo */
-        .main-content {
-          z-index: 20 !important;
-        }
-
-        /* Centrado perfecto para iPad Pro (768px - 1023px) */
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .main-container {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: center !important;
-            text-align: center !important;
-          }
-          
-          .title-container {
-            text-align: center !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-            max-width: 600px !important;
-          }
-          
-          .subtitle-container {
-            text-align: center !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-            max-width: 500px !important;
-            margin-bottom: 2.5rem !important;
-          }
-          
-          .otp-wrapper {
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-            width: 100% !important;
-            margin: 0 auto !important;
-          }
-          
-          .otp-component {
-            width: 100% !important;
-            max-width: 420px !important;
-            display: flex !important;
-            justify-content: center !important;
-          }
-        }
-
-        /* Para móviles pequeños */
-        @media (max-width: 767px) {
-          .otp-component {
-            max-width: 320px !important;
-          }
-        }
-
-        /* Para desktop */
-        @media (min-width: 1024px) {
-          .main-container {
-            align-items: flex-start !important;
-            text-align: left !important;
-          }
-        }
       `}</style>
+      {/* IMAGEN DE PERSONA ALEATORIA (SOLO PC) */}
+<div className="hidden lg:block absolute right-0 bottom-0 z-10 w-[45vw] h-[85vh] pointer-events-none">
+  <RandomPerson />
+</div>
     </div>
   );
 }

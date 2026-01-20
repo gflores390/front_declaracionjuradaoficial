@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { DeclaracionData, Inputs } from "@/app/declaracion-jurada/declaracion-jurada.interface";
 import { createDeclaracionJurada, updateDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
-import { InfoCards } from "./info-card";
-import { useState } from "react";
+import { DatePicker } from "@/components/date-picker"
+import React, { useState } from "react";
 import { ActividadDocenteCard } from "./actividad-docente";
 import { ActividadExtraCard } from "./actividad-extra-universitaria";
 import { ActividadAdministrativaCard } from "./actividad-adminstrativa";
@@ -18,10 +18,29 @@ import { OtraInformacionCard } from "./otra-informacion";
 import { PdfDeclaracion } from "../documentopdf/pdf-declaracion-completo";
 
 
+
 export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData }) => {
     // Para navegar
     const router = useRouter();
-    
+    const inputBaseStyle = `
+  w-full h-12 px-4
+  rounded-lg text-sm
+  transition-all duration-200 ease-in-out
+
+  border border-[#215F99]/30
+  bg-white
+
+  hover:border-[#215F99]
+
+  focus:outline-none
+  focus:border-[#215F99]
+  focus:ring-2 focus:ring-[#215F99]/25
+  focus:bg-[#EDF2F7]
+  focus:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+`
+
+
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     // ✅ NUEVO ESTADO PARA CONTROLAR LA VISTA PREVIA
     const [mostrarVistaPrevia, setMostrarVistaPrevia] = useState(true);
 
@@ -132,94 +151,261 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
         // Si es nuevo, ir al listado
         router.push(`/declaracion-jurada/${id}/edit`);
     }
-};
+    };
+
+    const [openDatosPersonales, setOpenDatosPersonales] = useState(true)
+   
+///////////// ESTADO PARA GUARDAR LAS ACTIVIDADES COLAPSADAS ///////////
+    const [colapsadas, setColapsadas] =
+    React.useState<Record<number, boolean>>(() => {
+      if (typeof window === "undefined") return {};
+      const saved = localStorage.getItem("actividadDocente_colapsadas");
+      return saved ? JSON.parse(saved) : {};
+    });
+
+    React.useEffect(() => {
+    const saved = localStorage.getItem("actividadDocente_colapsadas");
+    if (saved) {
+        setColapsadas(JSON.parse(saved));
+    }
+    }, []);
 
 
+        const [colapsadasActividadExtra, setColapsadasActividadExtra] =
+    React.useState<Record<number, boolean>>(() => {
+      if (typeof window === "undefined") return {};
+      const saved = localStorage.getItem("ActividadExtra_colapsadas");
+      return saved ? JSON.parse(saved) : {};
+    });
 
+    React.useEffect(() => {
+    localStorage.setItem(
+        "ActividadExtra_colapsadas",
+        JSON.stringify(colapsadasActividadExtra)
+    );
+    }, [colapsadasActividadExtra]);
+
+        const [colapsadasActividadAdministrativa, setColapsadasActividadAdministrativa] =
+    React.useState<Record<number, boolean>>(() => {
+        if (typeof window === "undefined") return {};
+        const saved = localStorage.getItem("ActividadAdministrativa_colapsadas");
+        return saved ? JSON.parse(saved) : {};
+    });
+
+    React.useEffect(() => {
+    localStorage.setItem(
+        "ActividadAdministrativa_colapsadas",
+        JSON.stringify(colapsadasActividadAdministrativa)
+    );
+    }, [colapsadasActividadAdministrativa]);
+
+    const [colapsadasJubilado, setColapsadasJubilado] =
+    React.useState<Record<number, boolean>>(() => {
+        if (typeof window === "undefined") return {};
+        const saved = localStorage.getItem("ProfesionalJubilado_colapsadas");
+        return saved ? JSON.parse(saved) : {};
+    });
+    React.useEffect(() => {
+    localStorage.setItem(
+        "ProfesionalJubilado_colapsadas",
+        JSON.stringify(colapsadasJubilado)
+    );
+    }, [colapsadasJubilado]);
+
+    const[colapsadasOtraInfo, setColapsadasOtraInfo] =
+    React.useState<Record<number, boolean>>(() => {
+        if (typeof window === "undefined") return {};
+        const saved = localStorage.getItem("OtraInfo_colapsadas");
+        return saved ? JSON.parse(saved) : {};
+    });
+    React.useEffect(() => {
+    localStorage.setItem(
+        "OtraInfo_colapsadas",
+        JSON.stringify(colapsadasOtraInfo)
+    );
+    }, [colapsadasOtraInfo]);
 
     // ✅ CAMBIAR EL RETURN PRINCIPAL PARA DIVIDIR EN DOS COLUMNAS
-    return (
- <div className="flex h-screen w-full bg-gray-50">
+    return (<div className="flex h-screen w-full bg-gray-50">
     
             {/* ✅ COLUMNA IZQUIERDA - FORMULARIO (OCUPA MITAD) */}
-            <div className={`h-full overflow-y-auto bg-white ${
-                mostrarVistaPrevia ? 'w-1/2' : 'w-full'
-            }`}>
+           <div
+                className={`h-full overflow-y-auto bg-[#F5F9FF]
+                    w-full
+                    ${mostrarVistaPrevia ? "lg:w-1/2" : "lg:w-full"}
+                `}
+                >
+
                 <div className="p-6">
                     {/* ✅ HEADER CON BOTÓN PARA MOSTRAR/OCULTAR PDF */}
                     {/* HEADER */}
-                    <div className="mb-6 border-b pb-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                                    {declaracion?._id ? 'Editar Declaración Jurada' : 'Nueva Declaración Jurada'}
-                                </h1>
-                                <p className="text-gray-600 text-sm">Complete todos los campos requeridos</p>
-                            </div>
-                            
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setMostrarVistaPrevia(!mostrarVistaPrevia)}
-                                className="flex items-center gap-2 px-4 py-2 border border-gray-300 hover:bg-gray-50 transition-colors"
-                            >
-                                {mostrarVistaPrevia ? (
-                                    <>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                        </svg>
-                                        Ocultar Vista Previa
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                        Mostrar Vista Previa
-                                    </>
-                                )}
-                            </Button>
+                    <div className="mb-6 border-b border-[#215F99]/20 pb-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                        <h1 className="text-2xl font-bold text-[#215F99] mb-1">
+                            {declaracion?._id ? "Editar Declaración Jurada" : "Nueva Declaración Jurada"}
+                        </h1>
+                        <p className="text-sm text-[#215F99]/70">
+                            Complete todos los campos requeridos
+                        </p>
                         </div>
+                        <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setMostrarVistaPrevia(!mostrarVistaPrevia)}
+                        className={`
+                            hidden lg:flex items-center gap-2 px-3 py-2
+                            rounded-md text-sm font-medium
+                            transition-all
+
+                            text-[#215F99]
+                            hover:bg-[#EDF2F7]
+                            focus:outline-none
+                            focus:ring-2 focus:ring-[#215F99]/20
+                        `}
+                        title={mostrarVistaPrevia ? "Ocultar vista previa" : "Mostrar vista previa"}
+                        >
+                        <svg
+                            className={`w-6 h-6 transition-transform ${
+                            mostrarVistaPrevia ? "rotate-180" : ""
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.8}
+                        >
+                            {mostrarVistaPrevia ? (
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                            ) : (
+                            <>
+                                <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                            </>
+                            )}
+                        </svg>
+
+                        <span className="hidden sm:inline">
+                            {mostrarVistaPrevia ? "Ocultar vista previa" : "Vista previa"}
+                        </span>
+                        </Button>
                     </div>
-          
+                    </div>
+
+                            
                     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
-                        <InfoCards />
-                        
+                      <div
+                        className="
+                            rounded-xl
+                            shadow-[0_8px_22px_rgba(33,95,153,0.20)]
+                            p-6
+                        "
+                        >
                         {/* Datos Personales */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>I. Datos Personales</CardTitle>
-                                <CardDescription>Información básica del declarante</CardDescription>
-                            </CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="flex flex-col gap-1 flex-1">
-                                    <label className="font-medium text-sm">Tipo de Documento</label>
-                                    <Select
-                                        {...register("datosPersonales.documentoIdentidad.tipo", {
-                                            required: "Debe seleccionar un tipo de documento"
-                                        })}
-                                        defaultValue={declaracion?.datosPersonales.documentoIdentidad.tipo || ""}
-                                        onValueChange={(v) => setValue("datosPersonales.documentoIdentidad.tipo", v, { shouldValidate: true })}
-                                    >
-                                        <SelectTrigger className="w-full md:w-full">
-                                            <SelectValue placeholder="Tipo Documento" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="CI">CI</SelectItem>
-                                            <SelectItem value="Pasaporte">Pasaporte</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.datosPersonales?.documentoIdentidad?.tipo && (
-                                        <span className="text-red-500 text-sm">
-                                            {errors.datosPersonales.documentoIdentidad.tipo.message}
-                                        </span>
-                                    )}
+                          {/* CABECERA DATOS PERSONALES */}
+                        <div
+                        className="cursor-pointer"
+                        onClick={() => setOpenDatosPersonales(!openDatosPersonales)}
+                        >
+                                {/* TEXTO */}
+                                <h2 className="font-sans text-[#215F99] font-bold uppercase text-base mb-1">
+                                    II. Datos Personales
+                                </h2>
+
+                                <div className="relative flex items-center">
+                                {/* LÍNEA */}
+                                <div className="flex-1 border-t border-dashed border-[#215F99]" />
+
+                                {/* RECTÁNGULO */}
+                                <div
+                                className="
+                                    ml-3 flex items-center gap-2
+                                    px-3 py-1
+                                    border border-dashed border-[#215F99]
+                                    rounded-md
+                                    text-[#215F99]
+                                    text-sm font-semibold
+                                    hover:bg-[#215F99]/5
+                                    transition-colors
+                                "
+                                >
+                                {/* TEXTO */}
+                                <span>
+                                    {openDatosPersonales ? "Ver menos" : "Ver más"}
+                                </span>
+
+                                {/* FLECHA (SOLO ESTA SE MUEVE) */}
+                                <span
+                                    className={`
+                                    text-lg
+                                    transition-transform duration-200
+                                    ${openDatosPersonales ? "rotate-180" : ""}
+                                    `}
+                                >
+                                    ▾
+                                </span>
                                 </div>
+                            </div>
+                         </div>
+                        {openDatosPersonales && (
+                            
+                           <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
+                                <div className="flex flex-col gap-1 flex-1">
+                                <label className="font-medium text-sm text-[#215F99]">Tipo de Documento</label>
+                                <Controller
+                                    name="datosPersonales.documentoIdentidad.tipo"
+                                    control={control}
+                                    rules={{ required: "Debe seleccionar un tipo de documento" }}
+                                    render={({ field }) => (
+                                        <Select
+                                            value={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <SelectTrigger className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+                                                min-h-[48px]                
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}>
+                                                <SelectValue placeholder="Tipo Documento" />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-white">
+                                                <SelectItem value="CI" className="hover:bg-blue-50">CI</SelectItem>
+                                                <SelectItem value="Pasaporte" className="hover:bg-blue-50">Pasaporte</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                />
+                                {errors.datosPersonales?.documentoIdentidad?.tipo && (
+                                    <span className="text-red-500 text-sm">
+                                        {errors.datosPersonales.documentoIdentidad.tipo.message}
+                                    </span>
+                                )}
+                            </div>
 
                                 <div className="flex flex-col gap-1 flex-[2]">
-                                    <label className="font-medium text-sm">Número de Documento</label>
+                                    <label className="font-medium text-sm text-[#215F99]">Número de Documento</label>
                                     <Input
+                                        className={`
+                                            ${inputBaseStyle}
+                                            uppercase             
+                                            [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                            [&:not(:placeholder-shown)]:border-[#215F99]
+                                            [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                        `} 
                                         {...register("datosPersonales.documentoIdentidad.numero", {
                                             required: "El número de documento es obligatorio",
                                             pattern: {
@@ -240,34 +426,53 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                     )}
                                 </div>
 
-                                {/* ... (MANTENER TODOS TUS CAMPOS EXISTENTES EXACTAMENTE COMO ESTÁN) */}
-                                
+                              
                                 <div className="flex flex-col gap-1 flex-1">
-                                    <label className="font-medium text-sm">Expedido</label>
-                                    <Select
-                                        defaultValue={declaracion?.datosPersonales.documentoIdentidad.expedido}
-                                        onValueChange={(v) => setValue("datosPersonales.documentoIdentidad.expedido", v)}
-                                    >
-                                        <SelectTrigger className="w-full md:w-full">
-                                            <SelectValue placeholder="Expedido en" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="LP">La Paz</SelectItem>
-                                            <SelectItem value="CB">Cochabamba</SelectItem>
-                                            <SelectItem value="SC">Santa Cruz</SelectItem>
-                                            <SelectItem value="OR">Oruro</SelectItem>
-                                            <SelectItem value="PT">Potosí</SelectItem>
-                                            <SelectItem value="CH">Chuquisaca</SelectItem>
-                                            <SelectItem value="BN">Beni</SelectItem>
-                                            <SelectItem value="PA">Pando</SelectItem>
-                                            <SelectItem value="TJ">Tarija</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <label className="font-medium text-sm text-[#215F99]">Expedido</label>
+                                    <Controller
+                                        name="datosPersonales.documentoIdentidad.expedido"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Select
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                            >
+                                                <SelectTrigger className={`
+                                                    ${inputBaseStyle}
+                                                    uppercase
+                                                    min-h-[48px]                
+                                                    [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                    [&:not(:placeholder-shown)]:border-[#215F99]
+                                                    [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                                `}>
+                                                    <SelectValue placeholder="Expedido en" />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-white">
+                                                    <SelectItem value="LP" className="hover:bg-blue-50">La Paz</SelectItem>
+                                                    <SelectItem value="CB" className="hover:bg-blue-50">Cochabamba</SelectItem>
+                                                    <SelectItem value="SC" className="hover:bg-blue-50">Santa Cruz</SelectItem>
+                                                    <SelectItem value="OR" className="hover:bg-blue-50">Oruro</SelectItem>
+                                                    <SelectItem value="PT" className="hover:bg-blue-50">Potosí</SelectItem>
+                                                    <SelectItem value="CH" className="hover:bg-blue-50">Chuquisaca</SelectItem>
+                                                    <SelectItem value="BN" className="hover:bg-blue-50">Beni</SelectItem>
+                                                    <SelectItem value="PA" className="hover:bg-blue-50">Pando</SelectItem>
+                                                    <SelectItem value="TJ" className="hover:bg-blue-50">Tarija</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        )}
+                                    />
                                 </div>
-
                                 <div className="flex flex-col gap-1">
-                                    <label className="font-medium text-sm">Nombres</label>
+                                    <label className="font-medium text-sm text-[#215F99]">Nombres</label>
                                     <Input
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
                                         {...register("datosPersonales.nombres", {
                                             required: "El nombre es obligatorio",
                                             pattern: {
@@ -276,6 +481,9 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                             },
                                         })}
                                         placeholder="Nombres"
+                                        onChange={(e) => {
+                                            e.target.value = e.target.value.toUpperCase();
+                                        }}
                                     />
                                     {errors.datosPersonales?.nombres && (
                                         <span className="text-red-500 text-sm">{errors.datosPersonales.nombres.message}</span>
@@ -283,146 +491,267 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                 </div>
 
                                 <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Apellido Paterno</label>
-                        <Input
-                            {...register("datosPersonales.paterno", {
-                                pattern: {
-                                    value: /^[A-Za-zÀ-ÿ\s]+$/i,
-                                    message: "El apellido paterno no puede contener números ni caracteres especiales",
-                                },
-                            })}
-                            placeholder="Apellido Paterno"
-                        />
-                        {errors.datosPersonales?.paterno && (
-                            <span className="text-red-500 text-sm">{errors.datosPersonales.paterno.message}</span>
-                        )}
-                    </div>
+                                    <label className="font-medium text-sm text-[#215F99]">Apellido Paterno</label>
+                                    <Input
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
 
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Apellido Materno</label>
-                        <Input
-                            {...register("datosPersonales.materno", {
-                                pattern: {
-                                    value: /^[A-Za-zÀ-ÿ\s]+$/i,
-                                    message: "El apellido materno no puede contener números ni caracteres especiales",
-                                },
-                            })}
-                            placeholder="Apellido Materno"
-                        />
-                        {errors.datosPersonales?.materno && (
-                            <span className="text-red-500 text-sm">{errors.datosPersonales.materno.message}</span>
-                        )}
-                    </div>
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.paterno", {
+                                            pattern: {
+                                                value: /^[A-Za-zÀ-ÿ\s]+$/i,
+                                                message: "El apellido paterno no puede contener números ni caracteres especiales",
+                                            },
+                                        })}
+                                        placeholder="Apellido Paterno"
+                                        onChange={(e) => {
+                                            e.target.value = e.target.value.toUpperCase();
+                                        }}
+                                    />
+                                    {errors.datosPersonales?.paterno && (
+                                        <span className="text-red-500 text-sm">{errors.datosPersonales.paterno.message}</span>
+                                    )}
+                                </div>
 
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Apellido de Casada</label>
-                        <Input
-                            {...register("datosPersonales.apellidoCasada", {
-                                pattern: {
-                                    value: /^[A-Za-zÀ-ÿ\s]+$/i,
-                                    message: "El apellido de casada no puede contener números ni caracteres especiales",
-                                },
-                            })}
-                            placeholder="Apellido de Casada"
-                        />
-                        {errors.datosPersonales?.apellidoCasada && (
-                            <span className="text-red-500 text-sm">{errors.datosPersonales.apellidoCasada.message}</span>
-                        )}
-                    </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Apellido Materno</label>
+                                    <Input
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.materno", {
+                                            pattern: {
+                                                value: /^[A-Za-zÀ-ÿ\s]+$/i,
+                                                message: "El apellido materno no puede contener números ni caracteres especiales",
+                                            },
+                                        })}
+                                        placeholder="Apellido Materno"
+                                        onChange={(e) => {
+                                            e.target.value = e.target.value.toUpperCase();
+                                        }}
+                                    />
+                                    {errors.datosPersonales?.materno && (
+                                        <span className="text-red-500 text-sm">{errors.datosPersonales.materno.message}</span>
+                                    )}
+                                </div>
 
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Fecha de Nacimiento</label>
-                        <Input
-                            type="date"
-                            {...register("datosPersonales.fechaNacimiento", {
-                                required: "La fecha de nacimiento es obligatoria",
-                                validate: (value) => {
-                                    if (!value) return "La fecha es obligatoria";
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Apellido de Casada</label>
+                                    <Input
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
 
-                                    const hoy = new Date();
-                                    const fecha = new Date(value);
-                                    const edad = hoy.getFullYear() - fecha.getFullYear();
-                                    const mes = hoy.getMonth() - fecha.getMonth();
-                                    const dia = hoy.getDate() - fecha.getDate();
-                                    const edadFinal = mes < 0 || (mes === 0 && dia < 0) ? edad - 1 : edad;
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.apellidoCasada", {
+                                            pattern: {
+                                                value: /^[A-Za-zÀ-ÿ\s]+$/i,
+                                                message: "El apellido de casada no puede contener números ni caracteres especiales",
+                                            },
+                                        })}
+                                        placeholder="Apellido de Casada"
+                                        onChange={(e) => {
+                                            e.target.value = e.target.value.toUpperCase();
+                                        }}
+                                    />
+                                    {errors.datosPersonales?.apellidoCasada && (
+                                        <span className="text-red-500 text-sm">{errors.datosPersonales.apellidoCasada.message}</span>
+                                    )}
+                                </div>
+                                
+                        
+                                    
+                                <Controller
+                                    name="datosPersonales.fechaNacimiento"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <DatePicker
+                                        value={
+                                            field.value
+                                            ? new Date(field.value).toISOString().split("T")[0]
+                                            : ""
+                                        }
+                                        onChange={field.onChange}
+                                        label="Fecha de Nacimiento"
+                                        placeholder="DD/MM/YYYY"
+                                        />
+                                    )}
+                                    />
+                                            {selectedDate && (
+                                                <div className="mt-6 p-4 bg-[#EDF2F7] rounded-lg">
+                                                <p className="text-sm text-gray-600 mb-1">Fecha seleccionada:</p>
+                                                <p className="text-lg font-semibold text-[#215F99]">
+                                                    {new Date(selectedDate).toLocaleDateString("es-ES", {
+                                                    weekday: "long",
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                    })}
+                                                </p>
+                                                </div>
+                                            )}
+                                    
 
-                                    if (edadFinal < 18) return "Debes tener al menos 18 años";
-                                    if (edadFinal > 100) return "Edad no válida";
-                                    return true;
-                                },
-                            })}
-                        />
-                        {errors.datosPersonales?.fechaNacimiento && (
-                            <span className="text-red-500 text-sm">{errors.datosPersonales.fechaNacimiento.message}</span>
-                        )}
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Zona</label>
-                        <Input {...register("datosPersonales.direccion.zona")} placeholder="Zona" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Avenida</label>
-                        <Input {...register("datosPersonales.direccion.avenida")} placeholder="Avenida" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Calle</label>
-                        <Input {...register("datosPersonales.direccion.calle")} placeholder="Calle" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Número Domicilio</label>
-                        <Input {...register("datosPersonales.direccion.numeroDomicilio")} placeholder="Número Domicilio" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Teléfono Domicilio</label>
-                        <Input {...register("datosPersonales.telefonoDomicilio")} placeholder="Teléfono Domicilio" />
-                    </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Zona</label>
+                                    <Input 
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.direccion.zona")} 
+                                        placeholder="Zona"
+                                        onChange={(e) => {
+                                            e.target.value = e.target.value.toUpperCase();
+                                        }}
+                                    />
+                                </div>
 
-                    {/* Celular con error */}
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Celular</label>
-                        <Input
-                            {...register("datosPersonales.celular", {
-                                required: "El celular es obligatorio",
-                                pattern: {
-                                    value: /^\d{8}$/,
-                                    message: "El celular debe tener exactamente 8 dígitos",
-                                },
-                            })}
-                            placeholder="Celular"
-                        />
-                        {errors.datosPersonales?.celular && (
-                            <span className="text-red-500 text-sm">{errors.datosPersonales.celular.message}</span>
-                        )}
-                    </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Avenida</label>
+                                    <Input 
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.direccion.avenida")} 
+                                        placeholder="Avenida"
+                                        onChange={(e) => {
+                                            e.target.value = e.target.value.toUpperCase();
+                                        }}
+                                    />
+                                </div>
 
-                    {/* Correo con error */}
-                    <div className="flex flex-col gap-1">
-                        <label className="font-medium text-sm">Correo Electrónico</label>
-                        <Input
-                            type="email"
-                            {...register("datosPersonales.correoElectronico", {
-                                required: "El correo es obligatorio",
-                                pattern: {
-                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                    message: "Correo inválido",
-                                },
-                            })}
-                            placeholder="Correo"
-                        />
-                        {errors.datosPersonales?.correoElectronico && (
-                            <span className="text-red-500 text-sm">{errors.datosPersonales.correoElectronico.message}</span>
-                        )}
-                    </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Calle</label>
+                                    <Input 
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.direccion.calle")} 
+                                        placeholder="Calle"
+                                        onChange={(e) => {
+                                            e.target.value = e.target.value.toUpperCase();
+                                        }}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Número Domicilio</label>
+                                    <Input 
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.direccion.numeroDomicilio")} 
+                                        placeholder="Número Domicilio"
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Teléfono Domicilio</label>
+                                    <Input 
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.telefonoDomicilio")} 
+                                        placeholder="Teléfono Domicilio"
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Celular</label>
+                                    <Input
+                                        className={`
+                                                ${inputBaseStyle}
+                                                uppercase
+                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                                [&:not(:placeholder-shown)]:border-[#215F99]
+                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                            `}
+                                        {...register("datosPersonales.celular", {
+                                            required: "El celular es obligatorio",
+                                            pattern: {
+                                                value: /^\d{8}$/,
+                                                message: "El celular debe tener exactamente 8 dígitos",
+                                            },
+                                        })}
+                                        placeholder="Celular"
+                                    />
+                                    {errors.datosPersonales?.celular && (
+                                        <span className="text-red-500 text-sm">{errors.datosPersonales.celular.message}</span>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-col gap-1">
+                                    <label className="font-medium text-sm text-[#215F99]">Correo Electrónico</label>
+                                    <Input
+                                        
+                                        type="email"
+                                        className={`
+                                            ${inputBaseStyle}
+                                            normal-case
+                                            [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                            [&:not(:placeholder-shown)]:border-[#215F99]
+                                            [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                        `}
+                                        {...register("datosPersonales.correoElectronico", {
+                                            required: "El correo es obligatorio",
+                                            pattern: {
+                                                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                                message: "Correo inválido",
+                                            },
+                                        })}
+                                        placeholder="Correo"
+                                    />
+                                    {errors.datosPersonales?.correoElectronico && (
+                                        <span className="text-red-500 text-sm">{errors.datosPersonales.correoElectronico.message}</span>
+                                    )}
+                                </div>
                             </CardContent>
-                        </Card>
+
+                            )}
+                    </div>        
+                       
 
                         {/* Actividad Docente/Administrativa */}
                         <ActividadDocenteCard
-                            docenteFields={docenteFields}
-                            removeDocente={removeDocente}
-                            appendDocente={appendDocente}
-                            control={control}
+                        docenteFields={docenteFields}
+                        removeDocente={removeDocente}
+                        appendDocente={appendDocente}
+                        control={control}
+                        colapsadas={colapsadas}
+                        setColapsadas={setColapsadas}
                         />
+
 
                         {/* Actividad Extra Universitaria */}
                         <ActividadExtraCard
@@ -430,6 +759,8 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             extraFields={extraFields}
                             appendExtra={appendExtra}
                             removeExtra={removeExtra}
+                            colapsadas={colapsadasActividadExtra}
+                            setColapsadas={setColapsadasActividadExtra}
                         />
 
                         {/* Actividad Administrativa */}
@@ -438,6 +769,8 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             adminFields={adminFields}
                             appendAdmin={appendAdmin}
                             removeAdmin={removeAdmin}
+                            colapsadas={colapsadasActividadAdministrativa}
+                            setColapsadas={setColapsadasActividadAdministrativa}
                         />
 
                         {/* Profesional Jubilado */}
@@ -446,6 +779,9 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             jubiladoFields={jubiladoFields}
                             appendJubilado={appendJubilado}
                             removeJubilado={removeJubilado}
+                            colapsadas={colapsadasJubilado}
+                            setColapsadas={ setColapsadasJubilado}
+                            
                         />
 
                         {/* Otra Información */}
@@ -454,20 +790,74 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             otraInfoFields={otraInfoFields}
                             appendOtra={appendOtra}
                             removeOtra={removeOtra}
+                            colapsadas={colapsadasOtraInfo}
+                            setColapsadas={setColapsadasOtraInfo}
                         />
 
                         {/* Submit */}
-                        <div className="sticky bottom-0 bg-transparent py-6 z-10 flex justify-center border-t">
-                            <Button
-                                type="submit"
-                                className="px-10 py-4 text-lg font-bold rounded-md transition-all duration-200 flex items-center gap-2"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                                {declaracion?._id ? 'Actualizar Declaración Jurada' : 'Crear Declaración Jurada'}
-                            </Button>
-                        </div>
+                        {/* BOTÓN SIEMPRE VISIBLE EN PANTALLA */}
+                        <div className="fixed right-10 bottom-20 z-[9999]">
+<Button
+  type="submit"
+  className="
+    group relative
+    flex items-center gap-4
+    px-10 py-8
+    rounded-xl
+    bg-gradient-to-br from-[#215F99] to-[#1B4F7D]
+    text-white
+    shadow-[0_10px_25px_rgba(33,95,153,0.35)]
+    hover:shadow-[0_14px_35px_rgba(33,95,153,0.45)]
+    transition-all duration-300 ease-out
+    hover:-translate-y-[2px]
+    active:translate-y-0
+    active:shadow-[0_6px_15px_rgba(33,95,153,0.35)]
+  "
+>
+  {/* ICONO */}
+  <span
+    className="
+      flex items-center justify-center
+      w-11 h-11
+      rounded-lg
+      bg-white/10
+      backdrop-blur-sm
+      shadow-inner
+      transition-transform duration-300
+      group-hover:scale-110
+    "
+  >
+    <svg
+      className="w-6 h-6 text-white drop-shadow-sm"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={3}
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 10l5 5m0 0 5-5m-5 5V4"
+      />
+    </svg>
+  </span>
+
+  {/* TEXTO */}
+  <div className="flex flex-col leading-tight text-left">
+    <span className="text-lg font-extrabold tracking-wide">
+      {declaracion?._id ? "Actualizar" : "Crear"}
+    </span>
+
+    <span className="text-sm font-medium text-white/85">
+      y descargar Declaración Jurada
+    </span>
+  </div>
+</Button>
+
+</div>
+
+
+
                     </form>
                 </div>
             </div>
@@ -475,9 +865,9 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
             {/* ✅ COLUMNA DERECHA - VISTA PREVIA PDF (OCUPA MITAD) */}
             {/* COLUMNA DERECHA - VISTA PREVIA PDF */}
             {mostrarVistaPrevia && (
-                <div className="w-1/2 h-full overflow-y-auto bg-gray-50 border-l border-gray-300 p-6">
-                    <PdfDeclaracion data={watchedData} />
-                </div>
+            <div className="hidden lg:block w-1/2 h-full overflow-y-auto bg-gray-50 border-l border-gray-300 p-6">
+                <PdfDeclaracion data={watchedData} />
+            </div>
             )}
         </div>
     );
