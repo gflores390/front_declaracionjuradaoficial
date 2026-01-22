@@ -8,15 +8,27 @@ interface PdfDeclaracionProps {
 export const PdfDeclaracion = ({ data }: PdfDeclaracionProps) => {
     const [hora, setHora] = useState("");
 
-    const formatFecha = (fechaStr: string) => {
-        if (!fechaStr) return '';
-        try {
-            const fecha = new Date(fechaStr);
-            return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        } catch {
-            return fechaStr;
-        }
-    };
+const formatFecha = (fecha: unknown): string | null => {
+  if (!fecha) return null;
+
+  // Si viene como string (ej: "1998-04-22" o "1998-04-22T00:00:00.000Z")
+  if (typeof fecha === "string") {
+    const [year, month, day] = fecha.split("T")[0].split("-");
+    return `${day}-${month}-${year}`;
+  }
+
+  // Si viene como Date
+  if (fecha instanceof Date) {
+    const day = String(fecha.getDate()).padStart(2, "0");
+    const month = String(fecha.getMonth() + 1).padStart(2, "0");
+    const year = fecha.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
+  return null;
+};
+
+
 
     const getMesDeclarado = () => {
         const ahora = new Date();
@@ -335,10 +347,17 @@ const TablaOtraInformacion = ({ datos }: any) => {
                     {/* FILA 1 */}
                     <div className="grid grid-cols-[calc(12.5cm)_1fr] gap-4 mb-2 ">
                     <div>
-                        <span className="font-semibold">NOMBRES Y APELLIDOS:</span>{' '}
-                        <span className="uppercase italic">
-                        {`${data.datosPersonales?.nombres || ''} ${data.datosPersonales?.paterno || ''} ${data.datosPersonales?.materno || ''}`.trim()}
-                        </span>
+                    <span className="font-semibold">NOMBRES Y APELLIDOS:</span>{' '}
+                    <span className="italic">
+                        {[
+                        data.datosPersonales?.nombres?.toUpperCase(),
+                        data.datosPersonales?.paterno?.toUpperCase(),
+                        data.datosPersonales?.materno?.toUpperCase(),
+                        data.datosPersonales?.apellidoCasada
+                            ? `de ${data.datosPersonales.apellidoCasada.toUpperCase()}`
+                            : null
+                        ].filter(Boolean).join(' ')}
+                    </span>
                     </div>
                     <div className="ml-[0.1cm]">
                         <span className="font-semibold">FECHA DE NACIMIENTO:</span>{' '}
@@ -396,9 +415,15 @@ const TablaOtraInformacion = ({ datos }: any) => {
                             : ''}
                             </span>
                         </div>
+                        {data.datosPersonales?.direccion?.urbanizacion && (
                         <div className="ml-[0.1cm]">
-                        <span className="font-semibold">URBANIZACIÓN:</span>
-                    </div>
+                            <span className="font-semibold">URBANIZACIÓN:</span>{' '}
+                            <span className="uppercase italic">
+                            {data.datosPersonales.direccion.urbanizacion}
+                            </span>
+                        </div>
+                        )}
+
                         </div>
 
                    

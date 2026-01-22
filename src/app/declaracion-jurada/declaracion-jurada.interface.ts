@@ -40,6 +40,8 @@ interface ActividadDocente {
     cargaHoraria?: number;
     horarios?: Horarios[];
     totalGanadoBs?: number;
+    fechaInicio?: string; 
+    fechaFin?: string;   
 }
 
 interface ActividadExtraUniversitaria {
@@ -49,6 +51,8 @@ interface ActividadExtraUniversitaria {
     horarios?: Horarios[];
     cargaHoraria?: number;
     totalGanado?: number;
+    fechaInicio?: string; 
+    fechaFin?: string;  
 }
 
 interface ActividadAdministrativa {
@@ -59,6 +63,8 @@ interface ActividadAdministrativa {
     horarios?: Horarios[];
     cargaHoraria?: number;
     totalGanado?: number;
+    fechaInicio?: string; 
+    fechaFin?: string;  
 }
 
 interface ProfesionalJubilado {
@@ -72,6 +78,8 @@ interface OtraInformacion {
     institucion?: string;
     documentoRespaldo?: string;
     montoDescuento?: number;
+    fechaInicio?: string; 
+    fechaFin?: string;  
 }
 
 interface CompatibilidadSumatoria {

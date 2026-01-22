@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react"
 import type React from "react"
-
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -9,11 +8,10 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { sendOtpApi, verificacionCi, verifyOtpApi } from "../../app/declaracion-jurada/declaracion-jurada.api"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { AlertTriangle, FilePlus } from "lucide-react"
+import { AlertTriangle, FilePlus, Sparkles, Shield, Lock } from "lucide-react"
 
 export default function OtpComponent() {
   const router = useRouter()
-
   const [ci, setCi] = useState("")
   const [step, setStep] = useState<"ci" | "confirm" | "otp">("ci")
   const [maskedPhone, setMaskedPhone] = useState("")
@@ -28,7 +26,6 @@ export default function OtpComponent() {
   const [autoVerifyTimer, setAutoVerifyTimer] = useState(0)
   const [otpValid, setOtpValid] = useState(false)
   const verifyingRef = useRef(false)
-
   const inputRef = useRef<HTMLInputElement>(null)
   const phoneInputRef = useRef<HTMLInputElement>(null)
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -56,19 +53,16 @@ export default function OtpComponent() {
   const handleSearch = async ({ ci }: { ci: string }) => {
     setCiError("")
     setIsLoading(true)
-
     if (!ci.trim()) {
       setCiError("Por favor ingresa tu CI")
       setIsLoading(false)
       return
     }
-
     if (ci.trim().length < 5) {
       setCiError("El CI debe tener al menos 5 dígitos")
       setIsLoading(false)
       return
     }
-
     try {
       const data = await verificacionCi(ci)
       if (data.numero) {
@@ -154,7 +148,6 @@ export default function OtpComponent() {
     verifyingRef.current = true
     const otpToVerify = otp.join("")
     setIsLoading(true)
-
     try {
       const data = await verifyOtpApi(otpToVerify)
       if (!data.valido) {
@@ -210,175 +203,110 @@ export default function OtpComponent() {
   }
 
   return (
-    <div className="w-full px-4 sm:px-0">
-      <Card
-        className="w-full max-w-[400px] mx-auto mt-4 sm:mt-10 shadow-lg transition-colors duration-300 
-                           bg-white/80 dark:bg-blue-900/40 
-                           dark:shadow-blue-800/50 border border-blue-200 dark:border-blue-700"
-      >
-      {step === "ci" && (
-        <>
-          <CardHeader
-              className="
-                text-center rounded-t-lg
-                bg-transparent
-                dark:bg-gradient-to-r 
-                px-4 sm:px-6
-              "
-            >
-            <CardTitle className="text-lg sm:text-xl font-semibold 
-            text-blue-700
-            dark:text-white">
-              Buscar mi Carnet de Identidad
-            </CardTitle>
-          </CardHeader>
+    <div className="flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white/1 backdrop-blur-lg border-2 border-[#01195F]/20 shadow-2xl shadow-[#01195F]/10 relative overflow-hidden">
+        {/* Borde brillante superior - amarillo */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
+        
+        {/* Efecto de luz diagonal */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-gradient-to-br from-[#01195F]/10 to-[#013991]/10 rounded-full blur-3xl"></div>
 
-          <CardContent className="space-y-4 px-4 sm:px-6">
-            {!allowCreate ? (
-              <>
+        <CardHeader className="space-y-1 pb-4 relative">
+          <div className="flex items-center justify-center mb-2">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#01195F] to-[#013991] rounded-full blur-lg opacity-50"></div>
+              <div className="relative bg-gradient-to-br from-[#01195F] to-[#013991] p-3 rounded-full">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-[#ffffff] to-[#ffffff] bg-clip-text text-transparent">
+            {step === "ci" && "Acceso Seguro"}
+            {step === "confirm" && "Verificación"}
+            {step === "otp" && "Autenticación"}
+          </CardTitle>
+          <p className="text-center text-sm text-white">
+            {step === "ci" && "Ingresa tu Carnet de Identidad"}
+            {step === "confirm" && "Confirma tu número de contacto"}
+            {step === "otp" && "Ingresa el código de verificación"}
+          </p>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {step === "ci" && (
+            <>
+              {!allowCreate ? (
+                <div className="space-y-3">
+                  <div className="relative group">
+                    <Input
+                      ref={inputRef}
+                      type="text"
+                      placeholder="Número de CI"
+                      value={ci}
+                      onChange={(e) => setCi(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      className="h-12 pl-4 pr-4 bg-white border-2 border-[#01195F]/30 rounded-xl text-slate-800 placeholder:text-slate-400 focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 transition-all duration-300 text-base shadow-sm hover:shadow-md"
+                      disabled={isLoading}
+                    />
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#01195F]/0 via-[#013991]/0 to-[#01195F]/0 group-hover:from-[#01195F]/5 group-hover:via-[#013991]/5 group-hover:to-[#01195F]/5 pointer-events-none transition-all duration-300"></div>
+                  </div>
+                  {ciError && (
+                    <Alert className="border-red-200 bg-red-50/80 backdrop-blur-sm">
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <AlertTitle className="text-red-800 font-semibold">Error</AlertTitle>
+                      <AlertDescription className="text-red-700">{ciError}</AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              ) : (
+                <Alert className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm shadow-lg">
+                  <AlertTriangle className="h-5 w-5 text-amber-600" />
+                  <AlertTitle className="text-amber-900 font-semibold">Atención</AlertTitle>
+                  <AlertDescription className="text-amber-800">
+                    No se encontró un usuario con ese CI, puedes crear una nueva declaración.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </>
+          )}
+
+          {step === "confirm" && (
+            <div className="space-y-4">
+              <div className="p-4 bg-gradient-to-br from-[#01195F]/5 to-[#013991]/5 rounded-xl border border-[#01195F]/20 shadow-inner">
+                <p className="text-sm text-white mb-1">Número encontrado:</p>
+                <p className="text-lg font-semibold text-[#EEF1FA] tracking-wide">{maskedPhone}</p>
+              </div>
+              <div className="relative group">
                 <Input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Ingresa tu CI"
-                  value={ci}
-                  onChange={(e) => setCi(e.target.value)}
+                  ref={phoneInputRef}
+                  type="tel"
+                  placeholder="Confirma tu número completo"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="bg-white dark:bg-blue-950 text-gray-900 dark:text-white 
-                                         border-2 border-blue-300 dark:border-blue-600 transition-colors duration-300
-                                         focus:border-blue-600 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800
-                                         text-base"
+                  className="h-12 pl-4 pr-4 bg-white border-2 border-[#01195F]/30 rounded-xl text-slate-800 placeholder:text-slate-400 focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 transition-all duration-300 text-base shadow-sm hover:shadow-md"
                   disabled={isLoading}
                 />
-                {ciError && (
-                  <Alert className="border-red-400 bg-red-50 dark:bg-red-900/40 text-red-800 dark:text-red-200 dark:border-red-600">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription className="text-sm">{ciError}</AlertDescription>
-                  </Alert>
-                )}
-              </>
-            ) : (
-              <Alert className="border-yellow-400 bg-yellow-50 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-200 dark:border-yellow-600">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Atención</AlertTitle>
-                <AlertDescription className="text-sm">
-                  No se encontró un usuario con ese CI, puedes crear una nueva declaración.
-                </AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#01195F]/0 via-[#013991]/0 to-[#01195F]/0 group-hover:from-[#01195F]/5 group-hover:via-[#013991]/5 group-hover:to-[#01195F]/5 pointer-events-none transition-all duration-300"></div>
+              </div>
+            </div>
+          )}
 
-          <CardFooter className="flex gap-2 px-4 sm:px-6">
-            {!allowCreate ? (
-              <Button
-                className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700
-                                         text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg text-base sm:text-lg transition-colors duration-300 font-semibold"
-                disabled={ci.trim().length < 5 || isLoading}
-                onClick={() => handleSearch({ ci })}
-              >
-                {isLoading ? "Buscando..." : "Buscar"}
-              </Button>
-            ) : (
-              <>
-                <Button
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 
-                                             text-gray-800 dark:text-gray-200 font-medium px-2 sm:px-3 py-2 rounded-lg text-sm 
-                                             transition-colors duration-300"
-                  onClick={handleCancel}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  className="flex-1 px-2 sm:px-3 py-2 text-white text-sm rounded-lg transition-colors duration-300 
-                                             bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 font-semibold
-                                             flex items-center justify-center gap-1"
-                  onClick={() => router.push(`/declaracion-jurada/nueva`)}
-                >
-                  <span className="truncate">Crear</span>
-                  <FilePlus className="h-4 w-4 text-white flex-shrink-0" />
-                </Button>
-              </>
-            )}
-          </CardFooter>
-        </>
-      )}
+          {step === "otp" && (
+            <div className="space-y-6">
+              <div className="p-4 bg-gradient-to-br from-[#01195F]/5 to-[#013991]/5 rounded-xl border border-[#01195F]/20 shadow-inner">
+                <p className="text-sm text-white text-center">
+                  Código enviado a <span className="font-semibold text-[#ffffff]">{maskedPhone}</span>
+                </p>
+              </div>
 
-      {step === "confirm" && (
-        <>
-          <CardHeader
-              className="
-                text-center text-lg sm:text-xl font-semibold
-                text-blue-700
-                dark:text-white
-                px-4 sm:px-6
-              "
-            >
-            <CardTitle className="text-lg sm:text-xl font-semibold
-      text-blue-700
-      dark:text-white">
-              Confirmar número
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent className="flex flex-col items-center gap-4 px-4 sm:px-6">
-            <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 transition-colors duration-300 text-center">
-              Número encontrado: <b className="text-blue-600 dark:text-blue-400 break-all">{maskedPhone}</b>
-            </p>
-
-            <Input
-              ref={phoneInputRef}
-              type="tel"
-              placeholder="Ingresa tu número de celular"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="bg-white dark:bg-blue-950 text-gray-900 dark:text-white 
-                                     border-2 border-blue-300 dark:border-blue-600 transition-colors duration-300
-                                     focus:border-blue-600 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800
-                                     text-base"
-              disabled={isLoading}
-            />
-          </CardContent>
-
-          <CardFooter className="px-4 sm:px-6">
-            <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700
-                                     text-white transition-colors duration-300 font-semibold py-2.5 sm:py-3 text-sm sm:text-base"
-              onClick={sendOtp}
-              disabled={!phone.trim() || isLoading}
-            >
-              {isLoading ? "Enviando..." : "Enviar Código a WhatsApp"}
-            </Button>
-          </CardFooter>
-        </>
-      )}
-
-      {step === "otp" && (
-        <>
-          <CardHeader
-              className="
-                text-center rounded-t-lg
-                bg-transparent
-                dark:bg-gradient-to-r 
-                px-4 sm:px-6
-              "
-            >
-            <CardTitle className="text-lg sm:text-xl font-semibold 
-            text-blue-700
-            dark:text-white">Ingresa el Código</CardTitle>
-          </CardHeader>
-
-          <CardContent className="flex flex-col items-center gap-4 transition-colors duration-300 rounded-md px-4 sm:px-6">
-            <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 text-center transition-colors duration-300">
-              Código enviado a <span className="font-semibold text-blue-600 dark:text-blue-400 break-all">{maskedPhone}</span>
-            </p>
-
-            <div className="w-full flex justify-center px-2">
-              <div className="flex gap-1 sm:gap-2">
+              <div className="flex justify-center gap-1.5 sm:gap-2.5 px-4 sm:px-6">
                 {otp.map((digit, index) => (
-                  <div key={index} className="relative">
+                  <div key={index} className="relative group flex-shrink-0">
                     <input
-                      ref={(el) => { otpRefs.current[index] = el }}
+                      ref={(el) => {
+                        otpRefs.current[index] = el
+                      }}
                       type="text"
                       inputMode="numeric"
                       maxLength={1}
@@ -386,98 +314,145 @@ export default function OtpComponent() {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       onPaste={handleOtpPaste}
-                      className="w-9 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-semibold
-                                                   bg-white dark:bg-blue-950
-                                                   border-2 border-blue-300 dark:border-blue-600
-                                                   text-gray-900 dark:text-white shadow-sm
-                                                   rounded-lg
-                                                   focus:outline-none focus:border-blue-600 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800
-                                                   hover:border-blue-400 hover:shadow-md
-                                                   transition-all duration-200 ease-out
-                                                   placeholder:text-gray-400"
+                      className="w-9 h-11 sm:w-11 sm:h-13 text-center text-lg sm:text-xl font-bold bg-white border-2 border-[#01195F]/30 text-slate-800 rounded-lg sm:rounded-xl focus:outline-none focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 hover:border-[#013991]/50 hover:shadow-lg transition-all duration-200 shadow-md placeholder:text-slate-300"
                       placeholder="•"
                     />
+                    <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#01195F]/0 to-[#013991]/0 group-hover:from-[#01195F]/10 group-hover:to-[#013991]/10 pointer-events-none transition-all duration-300"></div>
                   </div>
                 ))}
               </div>
-            </div>
 
-            <div className="flex gap-1 mb-2">
-              {[...Array(6)].map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-1 w-5 sm:w-6 rounded-full transition-colors duration-300 ${
-                    index < otp.filter((d) => d !== "").length ? "bg-blue-600 dark:bg-blue-400" : "bg-gray-300 dark:bg-gray-600"
-                  }`}
-                />
-              ))}
-            </div>
-
-            {autoVerifyTimer > 0 && (
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                <p className="text-xs sm:text-sm text-amber-600 dark:text-amber-400 font-semibold text-center">
-                  Verificando automáticamente en {autoVerifyTimer}s...
-                </p>
+              <div className="flex justify-center gap-1.5 sm:gap-2.5 px-4 sm:px-6">
+                {[...Array(6)].map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1.5 flex-1 max-w-[2.25rem] sm:max-w-[2.75rem] rounded-full transition-all duration-300 ${
+                      index < otp.filter((d) => d !== "").length
+                        ? "bg-gradient-to-r from-[#C07601] to-[#FFE59D] shadow-md shadow-[#01195F]/30"
+                        : "bg-slate-200"
+                    }`}
+                  />
+                ))}
               </div>
-            )}
 
-            <div className="text-center">
-              {timer > 0 ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    Reenviar código en <span className="font-bold text-amber-600 dark:text-amber-400">{timer}s</span>
-                  </p>
+              {autoVerifyTimer > 0 && (
+                <div className="flex items-center justify-center gap-2 text-sm text-[#01195F] animate-pulse">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Verificando automáticamente en {autoVerifyTimer}s...</span>
                 </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+
+        <CardFooter className="flex flex-col gap-3 pt-2">
+          {step === "ci" && (
+            <>
+              {!allowCreate ? (
+                <Button
+                  className="w-full h-12 bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white font-semibold rounded-xl shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                  disabled={isLoading || ci.trim().length < 5}
+                  onClick={() => handleSearch({ ci })}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Buscando...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      Buscar
+                    </span>
+                  )}
+                </Button>
               ) : (
-                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                  ¿No recibiste el código?{" "}
+                <div className="w-full flex gap-2">
                   <Button
-                    variant="link"
-                    size="sm"
-                    onClick={handleResend}
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 
-                                                 p-0 h-auto font-semibold underline-offset-4 hover:underline text-xs sm:text-sm"
-                    disabled={isLoading}
+                    onClick={handleCancel}
+                    variant="outline"
+                    className="flex-1 h-12 border-2 border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
                   >
-                    Reenviar código
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={() => router.push(`/declaracion-jurada/nueva`)}
+                    className="flex-1 h-12 bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white font-semibold rounded-xl shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <FilePlus className="w-5 h-5 mr-2" />
+                    Crear
                   </Button>
                 </div>
               )}
-            </div>
-          </CardContent>
+            </>
+          )}
 
-          <CardFooter className="px-4 sm:px-6">
+          {step === "confirm" && (
             <Button
-              className={`w-full h-11 sm:h-12 font-semibold text-sm sm:text-base rounded-lg transition-all duration-300 ${
-                otp.every((d) => d !== "")
-                  ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white shadow-lg transform hover:scale-[1.02]"
-                  : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed"
-              } ${isLoading ? "animate-pulse" : ""}`}
-              disabled={!otp.every((d) => d !== "") || isLoading}
-              onClick={() => handleVerifyOtp()}
+              className="w-full h-12 bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white font-semibold rounded-xl shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              disabled={!phone.trim() || isLoading}
+              onClick={sendOtp}
             >
               {isLoading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Verificando...
-                </div>
-              ) : otp.every((d) => d !== "") ? (
-                <div className="flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Verificar Código
-                </div>
+                <span className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Enviando...
+                </span>
               ) : (
-                `Ingresa ${6 - otp.filter((d) => d !== "").length} dígito${6 - otp.filter((d) => d !== "").length !== 1 ? "s" : ""} más`
+                "Enviar Código a WhatsApp"
               )}
             </Button>
-          </CardFooter>
-        </>
-      )}
-    </Card>
+          )}
+
+          {step === "otp" && (
+            <>
+              <div className="w-full text-center text-sm">
+                {timer > 0 ? (
+                  <p className="text-slate-600 text-white">
+                    Reenviar código en <span className="font-semibold text-[#ffffff]">{timer}s</span>
+                  </p>
+                ) : (
+                  <p className="text-slate-600 text-white">
+                    ¿No recibiste el código?{" "}
+                    <button
+                      onClick={handleResend}
+                      className="text-[#FFBC29] hover:text-[#013991] font-semibold underline underline-offset-2 hover:underline-offset-4 transition-all"
+                    >
+                      Reenviar código
+                    </button>
+                  </p>
+                )}
+              </div>
+
+              <Button
+                className={`w-full h-12 font-semibold rounded-xl transition-all duration-300 ${
+                  otp.every((d) => d !== "")
+                    ? "bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 hover:scale-[1.02] active:scale-[0.98]"
+                    : "bg-slate-200 text-slate-500 cursor-not-allowed"
+                } ${isLoading ? "animate-pulse" : ""}`}
+                disabled={!otp.every((d) => d !== "") || isLoading}
+                onClick={() => handleVerifyOtp()}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Verificando...
+                  </span>
+                ) : otp.every((d) => d !== "") ? (
+                  <span className="flex items-center gap-2">
+                    <Lock className="w-5 h-5" />
+                    Verificar Código
+                  </span>
+                ) : (
+                  `Ingresa ${6 - otp.filter((d) => d !== "").length} dígito${
+                    6 - otp.filter((d) => d !== "").length !== 1 ? "s" : ""
+                  } más`
+                )}
+              </Button>
+            </>
+          )}
+        </CardFooter>
+      </Card>
     </div>
   )
 }

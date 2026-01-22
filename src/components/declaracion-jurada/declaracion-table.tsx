@@ -58,7 +58,7 @@ export function DeclaracionTable({ declaracion }: { declaracion: DeclaracionData
                             </>
                         ) : (
                             <>
-                                Declarar <LucidePlusCircle className="ml-2 h-5 w-5" />
+                                Decasdfsalarar <LucidePlusCircle className="ml-2 h-5 w-5" />
                             </>
                         )}
                     </Link>

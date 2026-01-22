@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Controller, Control, FieldArrayWithId, useWatch } from "react-hook-form";
 import { Check, Pencil, Plus, Trash2 } from "lucide-react";
 import { actividadDocenteJson } from "@/app/declaracion-jurada/actividad-docente";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Inputs } from "@/app/declaracion-jurada/declaracion-jurada.interface";
+import DatePicker from "../date-picker";
 
 interface ActividadDocenteProps {
     control: Control<Inputs>;
@@ -105,7 +106,8 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
     control,
     name: `actividadDocente.${index}.materiaSigla`,
     });
-
+    const [mounted, setMounted] = useState(false);
+            useEffect(() => setMounted(true), []);
     return (
         <Card className="mb-4 transition-all duration-300 bg-transparent border-dashed border border-[#215F99] gap-2 rounded-md !p-2">
             <CardHeader className="flex flex-row justify-between items-center gap-2 ">
@@ -113,7 +115,7 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                     2.{index + 1} Actividad Docente
                 </div>
             </CardHeader>
-            {!colapsado && (
+            {!colapsado && mounted && (
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {/* Dependencia */}
                 <div className="flex flex-col gap-1">
@@ -291,6 +293,8 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                     />
                 </div>
 
+
+
                 {/* Días y Horarios */}
                  <div className="flex flex-col gap-3 w-full col-span-1 sm:col-span-2 lg:col-span-3">
                 <label className="font-semibold text-sm text-[#215F99]">
@@ -456,19 +460,63 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                         )}
                     />
                 </div>
+                {/* Fecha Inicio */}
+                <div className="flex flex-col gap-1">
+                
+
+                <Controller
+                name={`actividadDocente.${index}.fechaInicio`}
+                control={control}
+                render={({ field }) => (
+                    <DatePicker
+                    value={
+                        field.value
+                        ? new Date(field.value).toISOString().split("T")[0]
+                        : ""
+                    }
+                    onChange={field.onChange}
+                    label="Fecha Inicio"
+                    placeholder="DD/MM/YYYY"
+                    />
+                )}
+                />
+
+                </div>
+                {/* Fecha Fin */}
+                <div className="flex flex-col gap-1">
+                
+
+                <Controller
+                name={`actividadDocente.${index}.fechaFin`}
+                control={control}
+                render={({ field }) => (
+                    <DatePicker
+                    value={
+                        field.value
+                        ? new Date(field.value).toISOString().split("T")[0]
+                        : ""
+                    }
+                    onChange={field.onChange}
+                    label="Fecha Fin"
+                    placeholder="DD/MM/YYYY"
+                    />
+                )}
+                />
+
+                </div>
 
             </CardContent>
             )}
 
-            {colapsado && (
+            {colapsado && mounted && (
                 <div className=" ml-4 mbg-white rounded-md px-2 py-1 flex items-center justify-between text-sm text-[#215F99]">
                     
-                    <div className="truncate ">
-                    <span className="font-semibold">{dependencia || "Decanatura de Educación"}</span>
+                    <div className="min-w-0 truncate ">
+                    <span className="font-semibold truncate block">{dependencia || "Decanatura de Educación"}</span>
                     {" · "}
-                    <span>{carrera || "Ingeniería Electrónica"}</span>
+                    <span className="truncate inline-block ">{carrera || "Ingeniería Electrónica"}</span>
                     {" · "}
-                    <span className="text-xs text-[#215F99]/80">{materia || "Física II"}</span>
+                    <span className="text-xs text-[#215F99]/80 truncate inline-block">{materia || "Física II"}</span>
                     </div>
 
                 </div>
@@ -477,39 +525,41 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
 
 
             {/* Botón eliminar actividad docente */}
-            <CardContent className="flex justify-end gap-4 pt-2 mb-2 ">
-                <>
-                <Button
-                size="sm"
-                onClick={() => removeDocente(index)}
-                className="flex items-center gap-1 bg-white text-red-600 border border-red-600 hover:bg-red-600 hover:text-white"
-                >
-                <Trash2 className="w-4 h-4" />
-                Eliminar
-                </Button>
-
-                <Button
-                type="button"
-                size="sm"
-                onClick={onToggle}
-                className="flex items-center gap-2 bg-[#215F99] text-white border border-[#215F99]
-                hover:bg-white hover:text-[#215F99]"
-                >
-                {colapsado ? (
-                    <>
-                    <Pencil className="w-4 h-4" />
-                    Editar
-                    </>
-                ) : (
-                    <>
-                    <Check className="w-4 h-4" />
-                    Completado
-                    </>
-                )}
-                </Button>
-
-                </>
-            </CardContent>
+             <CardContent className="flex justify-end pt-0 gap-4">
+                           <>
+                            <Button
+                            size="sm"
+                            onClick={() => removeDocente(index)}
+                            className="flex items-center gap-1 bg-white text-red-600 border border-red-600 hover:bg-red-600 hover:text-white"
+                            >
+                            <Trash2 className="w-4 h-4" />
+                            Eliminar
+                            </Button>
+            
+                            <Button
+                            type="button"
+                            size="sm"
+                            onClick={onToggle}
+                            className="flex items-center gap-2 bg-[#215F99] text-white border border-[#215F99]
+                            hover:bg-white hover:text-[#215F99]"
+                            >
+                             {mounted && (
+                                colapsado ? (
+                                <>
+                                    <Pencil className="w-4 h-4" />
+                                    Editar
+                                </>
+                                ) : (
+                                <>
+                                    <Check className="w-4 h-4" />
+                                    Completado
+                                </>
+                                )
+                            )}
+                            </Button>
+            
+                            </>
+                        </CardContent>
         </Card>
     );
 };
@@ -587,7 +637,7 @@ export const ActividadDocenteCard: React.FC<ActividadDocenteProps> = ({ control,
             </CardContent>     
             )}
             <div>
-                  <Button
+                <Button
                     type="button"
                     variant="outline"
                     className="mt-10 w-full flex items-center justify-center gap-2 border-[#215F99] text-[#215F99] hover:bg-blue-500/10 font-semibold transition-colors"
@@ -597,6 +647,8 @@ export const ActividadDocenteCard: React.FC<ActividadDocenteProps> = ({ control,
                         appendDocente({ 
                         horarios: [], 
                         totalGanadoBs: 0,
+                        fechaInicio: "",
+                        fechaFin: "",
                     });
                     setColapsadas((prev: Record<string, boolean>) => ({
                     ...prev,

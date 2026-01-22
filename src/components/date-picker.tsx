@@ -5,7 +5,6 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 
 interface DatePickerProps {
-  
   value?: string
   onChange: (date: string) => void
   label?: string
@@ -21,7 +20,7 @@ export function DatePicker({
   className = "",
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [currentMonth, setCurrentMonth] = useState(value ? new Date(value) : new Date())
+  const [currentMonth, setCurrentMonth] = useState(value ? new Date(value + 'T12:00:00') : new Date())
   const [yearInput, setYearInput] = useState(new Date().getFullYear().toString())
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -32,7 +31,7 @@ export function DatePicker({
     return `${day}/${month}/${year}`
   }
 
-  // Convertir DD/MM/YYYY a YYYY-MM-DD
+  // Convertir DD/MM/YYYY a YYYY-MM-DD (SIN conversión de zona horaria)
   const formatDateToInput = (day: number, month: number, year: number) => {
     return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
   }
@@ -129,6 +128,13 @@ export function DatePicker({
   const currentYear = currentMonth.getFullYear()
   const maxYear = new Date().getFullYear()
   const yearOptions = Array.from({ length: maxYear - 1899 }, (_, i) => 1900 + i).filter((y) => y <= maxYear)
+
+  // ✅ FUNCIÓN HELPER PARA COMPARAR FECHAS SIN ZONA HORARIA
+  const isSameDate = (dateString: string | undefined, day: number, month: number, year: number) => {
+    if (!dateString) return false
+    const [valueYear, valueMonth, valueDay] = dateString.split("-").map(Number)
+    return valueDay === day && valueMonth === month + 1 && valueYear === year
+  }
 
   return (
     <div className={`flex flex-col gap-1 ${className}`} ref={containerRef}>
@@ -242,11 +248,8 @@ export function DatePicker({
               ))}
 
               {days.map((day) => {
-                const isSelected =
-                  value &&
-                  new Date(value).getDate() === day &&
-                  new Date(value).getMonth() === currentMonth.getMonth() &&
-                  new Date(value).getFullYear() === currentMonth.getFullYear()
+                // ✅ USAR LA NUEVA FUNCIÓN SIN CONVERSIÓN DE ZONA HORARIA
+                const isSelected = isSameDate(value, day, currentMonth.getMonth(), currentMonth.getFullYear())
 
                 return (
                   <button
@@ -269,4 +272,4 @@ export function DatePicker({
       </div>
     </div>
   )
-}
+}export default DatePicker

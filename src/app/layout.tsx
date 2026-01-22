@@ -142,11 +142,13 @@ export default function RootLayout({
                 {children}
               </main>
 
-              <footer className="flex-shrink-0 bg-gray-100 dark:bg-gray-800 py-6 border-t border-gray-200">
+<footer className="flex-shrink-0 bg-gray-100 dark:bg-gray-800 py-6 border-t border-gray-200">
                 <div className="container mx-auto px-4 text-center text-gray-700 dark:text-gray-300">
                   <div>© {new Date().getFullYear()} Área de Sistemas.</div>
                 </div>
               </footer>
+
+
             </div>
 
           </div>

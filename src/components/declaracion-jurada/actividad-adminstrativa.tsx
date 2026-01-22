@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Button } from "../ui/button";
 import { Check, Pencil, Plus, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import DatePicker from "../date-picker";
 
 // Opciones tipo Pública / Privada
 const actividadAdminJson = {
@@ -420,17 +421,60 @@ const ActividadAdminItem: React.FC<ActividadAdminItemProps> = ({ control, index,
                         )}
                     />
                 </div>
+                {/* Fecha Inicio */}
+                <div className="flex flex-col gap-1">
+                <Controller
+  name={`actividadAdministrativa.${index}.fechaInicio`}
+  control={control}
+  render={({ field }) => (
+    <DatePicker
+      label="Fecha Inicio"
+      placeholder="DD/MM/YYYY"
+      value={
+        field.value
+          ? new Date(field.value).toISOString().split("T")[0]
+          : ""
+      }
+      onChange={field.onChange}
+    />
+  )}
+/>
+
+                </div>
+
+                {/* Fecha Fin */}
+                <div className="flex flex-col gap-1">
+                <Controller
+  name={`actividadAdministrativa.${index}.fechaFin`}
+  control={control}
+  render={({ field }) => (
+    <DatePicker
+      label="Fecha Fin"
+      placeholder="DD/MM/YYYY"
+      value={
+        field.value
+          ? new Date(field.value).toISOString().split("T")[0]
+          : ""
+      }
+      onChange={field.onChange}
+    />
+  )}
+/>
+
+                </div>
+
+
             </CardContent>
             )}
-            {colapsado && (
-                <div className=" ml-4 mbg-white rounded-md px-2 py-1 flex items-center justify-between text-sm text-[#215F99]">
+            {colapsado && mounted && (
+                <div className="ml-4 bg-white rounded-md px-2 py-1 flex items-center justify-between text-sm text-[#215F99]">
                     
-                    <div className="truncate ">
-                    <span className="font-semibold">{dependencia || "Decanatura de Educación"}</span>
+                    <div className="min-w-0 truncate ">
+                    <span className="font-semibold truncate block">{dependencia || "Sin dependencia"}</span>
                     {" · "}
-                    <span>{carrera || "Ingeniería Electrónica"}</span>
+                    <span className="truncate inline-block">{carrera || "Sin Carrera"}</span>
                     {" · "}
-                    <span className="text-xs text-[#215F99]/80">{materia || "Física II"}</span>
+                    <span className="text-xs text-[#215F99]/80 truncate inline-block">{materia || "Sin Materia"}</span>
                     </div>
 
                 </div>
@@ -561,6 +605,8 @@ export const ActividadAdministrativaCard: React.FC<ActividadAdminProps> = ({ con
                         cargaHoraria: 0,
                         horarios: [],
                         totalGanado: 0,
+                        fechaInicio: "",
+                        fechaFin: "",
                     });
                         setColapsadas((prev: Record<string, boolean>) => ({
                         ...prev,

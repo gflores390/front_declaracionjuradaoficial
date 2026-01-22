@@ -8,6 +8,7 @@ import { Button } from "../ui/button"
 import { Plus, Trash2, ChevronDown, Pencil, Check } from "lucide-react"
 import type React from "react"
 import { useEffect, useState } from "react"
+import DatePicker from "../date-picker"
 
 interface OtraInfoProps {
   control: Control<Inputs>
@@ -174,54 +175,98 @@ const OtraInfoItem: React.FC<OtraInfoItemProps> = ({ control, index, removeOtra,
               )}
             />
           </div>
+          {/* Fecha inicio */}
+          <div className="flex flex-col gap-1">
+  <Controller
+  name={`otraInformacion.${index}.fechaInicio`}
+  control={control}
+  render={({ field }) => (
+    <DatePicker
+      label="Fecha Inicio"
+      placeholder="DD/MM/YYYY"
+      value={
+        field.value
+          ? new Date(field.value).toISOString().split("T")[0]
+          : ""
+      }
+      onChange={field.onChange}
+    />
+  )}
+/>
+
+</div>
+          {/* Fecha fin */}
+
+          <div className="flex flex-col gap-1">
+  <Controller
+  name={`otraInformacion.${index}.fechaFin`}
+  control={control}
+  render={({ field }) => (
+    <DatePicker
+      label="Fecha Fin"
+      placeholder="DD/MM/YYYY"
+      value={
+        field.value
+          ? new Date(field.value).toISOString().split("T")[0]
+          : ""
+      }
+      onChange={field.onChange}
+    />
+  )}
+/>
+
+</div>
+
+
         </CardContent>
       )}
-       {!colapsado && mounted && (
-                <div className=" ml-4 mbg-white rounded-md px-2 py-1 flex items-center justify-between text-sm text-[#215F99]">
+      {colapsado && mounted && (
+                <div className="ml-4 bg-white rounded-md px-2 py-1 flex items-center justify-between text-sm text-[#215F99]">
                     
-                    <div className="truncate ">
-                    <span className="font-semibold">{dependencia || "Decanatura de Educación"}</span>
+                    <div className="min-w-0 truncate ">
+                    <span className="font-semibold truncate block">{dependencia || "Sin dependencia"}</span>
                     {" · "}
-                    <span>{carrera || "Ingeniería Electrónica"}</span>
-                    {" · "}
-                    <span className="text-xs text-[#215F99]/80">{materia || "Física II"}</span>
-                    </div>
+                    <span className="truncate inline-block">{carrera || "Sin Carrera"}</span>
+                      </div>
 
                 </div>
                 )}
               {/* Botón eliminar */}
-            <CardContent className="flex justify-end pt-0">
-                <>  <Button 
-                variant="destructive" 
-                size="sm" 
-                onClick={() => removeOtra(index)} 
-                className="flex items-center gap-1 bg-white text-red-600 border border-red-600 hover:bg-red-600 hover:text-white">
-                    <Trash2 className="w-4 h-4" /> Eliminar
-                </Button>
-                <Button
-                type="button"
-                size="sm"
-                onClick={onToggle}
-                className="flex items-center gap-2 bg-[#215F99] text-white border border-[#215F99]
-                hover:bg-white hover:text-[#215F99]"
-                >
-                {mounted && (
-                                    colapsado ? (
-                                    <>
-                                        <Pencil className="w-4 h-4" />
-                                        Editar
-                                    </>
-                                    ) : (
-                                    <>
-                                        <Check className="w-4 h-4" />
-                                        Completado
-                                    </>
-                                    )
-                                )}
-                </Button>
-                </>
-                
-            </CardContent>
+           <CardContent className="flex justify-end pt-0">
+                                     <>
+                                      <Button
+                                      size="sm"
+                                      onClick={() => removeOtra(index)}
+                                      className="flex items-center gap-1 bg-white text-red-600 border border-red-600 hover:bg-red-600 hover:text-white"
+                                      >
+                                      <Trash2 className="w-4 h-4" />
+                                      Eliminar
+                                      </Button>
+                      
+                                      <Button
+                                      type="button"
+                                      size="sm"
+                                      onClick={onToggle}
+                                      className="flex items-center gap-2 bg-[#215F99] text-white border border-[#215F99]
+                                      hover:bg-white hover:text-[#215F99]"
+                                      >
+                                       {mounted && (
+                                          colapsado ? (
+                                          <>
+                                              <Pencil className="w-4 h-4" />
+                                              Editar
+                                          </>
+                                          ) : (
+                                          <>
+                                              <Check className="w-4 h-4" />
+                                              Completado
+                                          </>
+                                          )
+                                      )}
+                                      </Button>
+                      
+                                      </>
+                                  </CardContent>
     </Card>
   )
 }
@@ -311,6 +356,8 @@ export const OtraInformacionCard: React.FC<OtraInfoProps> = ({
                 institucion: "",
                 documentoRespaldo: "",
                 montoDescuento: 0,
+                fechaInicio: "",
+                fechaFin: "",
               });
               setColapsadas((prev: Record<number, boolean>) => ({
                 ...prev,

@@ -118,26 +118,106 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
         }
         return resultado;
     };
+const formatFecha = (fecha: unknown): string | null => {
+  if (!fecha) return null;
 
-    const onSubmit: SubmitHandler<Inputs> = async (data) => {
-         console.log("📤 DATOS QUE SE VAN A ENVIAR:", data);
-        console.log("📤 datosPersonales:", data.datosPersonales);
-        try {
-            let response: Inputs;
-            if (declaracion?._id) {
-                response = await updateDeclaracion(declaracion._id, limpiarPayload(data));
-                toast.success("Se actualizó la declaración jurada");
-            } else {
-                const payloadLimpio = limpiarPayload(data);
-                response = await createDeclaracionJurada(payloadLimpio);
-                toast.success("Se creó la declaración jurada");
-            }
-            handleOpenPdf(response._id);
-        } catch (error) {
-            console.error("Error al enviar el formulario:", error);
-            toast.error("Error al enviar el formulario");
-        }
-    };
+  // Si viene como string (ej: "1998-04-22" o "1998-04-22T00:00:00.000Z")
+  if (typeof fecha === "string") {
+    return fecha.split("T")[0];
+  }
+
+  // Si viene como Date
+  if (fecha instanceof Date) {
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, "0");
+    const day = String(fecha.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return null;
+};
+
+const sumarUnDia = (fecha: string | Date): string => {
+  const d = new Date(fecha);
+
+  // si no es válido, retorna vacío (o lanza error)
+  if (Number.isNaN(d.getTime())) return "";
+
+  d.setDate(d.getDate() + 1);
+
+  return d.toISOString(); // <-- ISO válido
+};
+
+
+const onSubmit: SubmitHandler<Inputs> = async (data) => {
+  const normalizarFecha = (fecha?: string | Date | null): string => {
+    if (!fecha) return ""; // <-- si no hay fecha, envia cadena vacía
+
+    const iso = sumarUnDia(fecha);
+    return iso;
+  };
+
+  const dataToSend = {
+    ...data,
+
+    datosPersonales: {
+      ...data.datosPersonales,
+      fechaNacimiento: normalizarFecha(data.datosPersonales?.fechaNacimiento),
+    },
+
+    profesionalJubilado: data.profesionalJubilado?.map((item) => ({
+      ...item,
+      fechaDeJubilacion: normalizarFecha(item.fechaDeJubilacion),
+    })),
+
+    // actividadDocente: data.actividadDocente?.map((item) => ({
+    //   ...item,
+    //   fechaInicio: normalizarFecha(item.fechaInicio),
+    //   fechaFin: normalizarFecha(item.fechaFin),
+    // })),
+
+    // actividadExtraUniversitaria: data.actividadExtraUniversitaria?.map((item) => ({
+    //   ...item,
+    //   fechaInicio: normalizarFecha(item.fechaInicio),
+    //   fechaFin: normalizarFecha(item.fechaFin),
+    // })),
+
+    // actividadAdministrativa: data.actividadAdministrativa?.map((item) => ({
+    //   ...item,
+    //   fechaInicio: normalizarFecha(item.fechaInicio),
+    //   fechaFin: normalizarFecha(item.fechaFin),
+    // })),
+
+    // otraInformacion: data.otraInformacion?.map((item) => ({
+    //   ...item,
+    //   fechaInicio: normalizarFecha(item.fechaInicio),
+    //   fechaFin: normalizarFecha(item.fechaFin),
+    // })),
+  };
+
+  try {
+    let response: Inputs;
+
+    if (declaracion?._id) {
+      response = await updateDeclaracion(
+        declaracion._id,
+        limpiarPayload(dataToSend)
+      );
+      toast.success("Se actualizó la declaración jurada");
+    } else {
+      response = await createDeclaracionJurada(
+        limpiarPayload(dataToSend)
+      );
+      toast.success("Se creó la declaración jurada");
+    }
+
+    handleOpenPdf(response._id);
+  } catch (error) {
+    console.error("Error al enviar el formulario:", error);
+    toast.error("Error al enviar el formulario");
+  }
+};
+
 
     const handleOpenPdf = (id: string) => {
     const pdfUrl = `${process.env.NEXT_PUBLIC_API_URL}/declaracion-jurada/reporte/${id}`;
@@ -224,6 +304,20 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
         JSON.stringify(colapsadasOtraInfo)
     );
     }, [colapsadasOtraInfo]);
+
+
+    React.useEffect(() => {
+    const handleResize = () => {
+        if (window.innerWidth < 1024) {
+        setMostrarVistaPrevia(false);
+        }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     // ✅ CAMBIAR EL RETURN PRINCIPAL PARA DIVIDIR EN DOS COLUMNAS
     return (<div className="flex h-screen w-full bg-gray-50">
@@ -362,39 +456,49 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                             
                            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
                                 <div className="flex flex-col gap-1 flex-1">
-                                <label className="font-medium text-sm text-[#215F99]">Tipo de Documento</label>
-                                <Controller
-                                    name="datosPersonales.documentoIdentidad.tipo"
-                                    control={control}
-                                    rules={{ required: "Debe seleccionar un tipo de documento" }}
-                                    render={({ field }) => (
-                                        <Select
-                                            value={field.value}
-                                            onValueChange={field.onChange}
-                                        >
-                                            <SelectTrigger className={`
-                                                ${inputBaseStyle}
-                                                uppercase
-                                                min-h-[48px]                
-                                                [&:not(:placeholder-shown)]:bg-[#EDF2F7]
-                                                [&:not(:placeholder-shown)]:border-[#215F99]
-                                                [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
-                                            `}>
-                                                <SelectValue placeholder="Tipo Documento" />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-white">
-                                                <SelectItem value="CI" className="hover:bg-blue-50">CI</SelectItem>
-                                                <SelectItem value="Pasaporte" className="hover:bg-blue-50">Pasaporte</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    )}
-                                />
-                                {errors.datosPersonales?.documentoIdentidad?.tipo && (
-                                    <span className="text-red-500 text-sm">
-                                        {errors.datosPersonales.documentoIdentidad.tipo.message}
-                                    </span>
-                                )}
-                            </div>
+  <label className="font-medium text-sm text-[#215F99]">Tipo de Documento</label>
+
+  <Controller
+    name="datosPersonales.documentoIdentidad.tipo"
+    control={control}
+    rules={{ required: "Debe seleccionar un tipo de documento" }}
+    render={({ field }) => (
+      <Select
+        value={field.value}
+        onValueChange={field.onChange}
+      >
+        <SelectTrigger
+          className={`
+            ${inputBaseStyle}
+            uppercase
+            min-h-[48px]
+            [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+            [&:not(:placeholder-shown)]:border-[#215F99]
+            [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+          `}
+        >
+          <SelectValue placeholder="Tipo Documento" />
+        </SelectTrigger>
+
+        <SelectContent className="bg-white">
+          <SelectItem value="CI" className="hover:bg-blue-50">
+            CI
+          </SelectItem>
+          <SelectItem value="PASAPORTE" className="hover:bg-blue-50">
+            Pasaporte
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    )}
+  />
+
+  {errors.datosPersonales?.documentoIdentidad?.tipo && (
+    <span className="text-red-500 text-sm">
+      {errors.datosPersonales.documentoIdentidad.tipo.message}
+    </span>
+  )}
+</div>
+
 
                                 <div className="flex flex-col gap-1 flex-[2]">
                                     <label className="font-medium text-sm text-[#215F99]">Número de Documento</label>
@@ -474,16 +578,15 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                                 [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
                                             `}
                                         {...register("datosPersonales.nombres", {
-                                            required: "El nombre es obligatorio",
-                                            pattern: {
-                                                value: /^[A-Za-zÀ-ÿ\s]+$/i,
-                                                message: "El nombre no puede contener números ni caracteres especiales",
-                                            },
-                                        })}
-                                        placeholder="Nombres"
-                                        onChange={(e) => {
+                                        required: "El nombre es obligatorio",
+                                        pattern: {
+                                            value: /^[A-Za-zÀ-ÿ\s]+$/i,
+                                            message: "...",
+                                        },
+                                        onChange: (e) => {
                                             e.target.value = e.target.value.toUpperCase();
-                                        }}
+                                        }
+                                    })}
                                     />
                                     {errors.datosPersonales?.nombres && (
                                         <span className="text-red-500 text-sm">{errors.datosPersonales.nombres.message}</span>
@@ -501,16 +604,16 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                                 [&:not(:placeholder-shown)]:border-[#215F99]
                                                 [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
                                             `}
-                                        {...register("datosPersonales.paterno", {
-                                            pattern: {
-                                                value: /^[A-Za-zÀ-ÿ\s]+$/i,
-                                                message: "El apellido paterno no puede contener números ni caracteres especiales",
-                                            },
-                                        })}
-                                        placeholder="Apellido Paterno"
-                                        onChange={(e) => {
+                                       {...register("datosPersonales.paterno", {
+                                        pattern: {
+                                            value: /^[A-Za-zÀ-ÿ\s]+$/i,
+                                            message: "El apellido paterno no puede contener números ni caracteres especiales",
+                                        },
+                                        onChange: (e) => {
                                             e.target.value = e.target.value.toUpperCase();
-                                        }}
+                                        }
+                                    })}
+                                    placeholder="Apellido Paterno"
                                     />
                                     {errors.datosPersonales?.paterno && (
                                         <span className="text-red-500 text-sm">{errors.datosPersonales.paterno.message}</span>
@@ -532,11 +635,11 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                                 value: /^[A-Za-zÀ-ÿ\s]+$/i,
                                                 message: "El apellido materno no puede contener números ni caracteres especiales",
                                             },
+                                            onChange: (e) => {
+                                                e.target.value = e.target.value.toUpperCase();
+                                            }
                                         })}
                                         placeholder="Apellido Materno"
-                                        onChange={(e) => {
-                                            e.target.value = e.target.value.toUpperCase();
-                                        }}
                                     />
                                     {errors.datosPersonales?.materno && (
                                         <span className="text-red-500 text-sm">{errors.datosPersonales.materno.message}</span>
@@ -554,16 +657,16 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                                 [&:not(:placeholder-shown)]:border-[#215F99]
                                                 [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
                                             `}
-                                        {...register("datosPersonales.apellidoCasada", {
-                                            pattern: {
-                                                value: /^[A-Za-zÀ-ÿ\s]+$/i,
-                                                message: "El apellido de casada no puede contener números ni caracteres especiales",
-                                            },
-                                        })}
-                                        placeholder="Apellido de Casada"
-                                        onChange={(e) => {
-                                            e.target.value = e.target.value.toUpperCase();
-                                        }}
+                                          {...register("datosPersonales.apellidoCasada", {
+                                                pattern: {
+                                                    value: /^[A-Za-zÀ-ÿ\s]+$/i,
+                                                    message: "El apellido de casada no puede contener números ni caracteres especiales",
+                                                },
+                                                onChange: (e) => {
+                                                    e.target.value = e.target.value.toUpperCase();
+                                                }
+                                            })}
+                                            placeholder="Apellido de Casada"
                                     />
                                     {errors.datosPersonales?.apellidoCasada && (
                                         <span className="text-red-500 text-sm">{errors.datosPersonales.apellidoCasada.message}</span>
@@ -588,6 +691,7 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                         />
                                     )}
                                     />
+
                                             {selectedDate && (
                                                 <div className="mt-6 p-4 bg-[#EDF2F7] rounded-lg">
                                                 <p className="text-sm text-gray-600 mb-1">Fecha seleccionada:</p>
@@ -613,11 +717,12 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                                 [&:not(:placeholder-shown)]:border-[#215F99]
                                                 [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
                                             `}
-                                        {...register("datosPersonales.direccion.zona")} 
+                                         {...register("datosPersonales.direccion.zona", {
+                                            onChange: (e) => {
+                                                e.target.value = e.target.value.toUpperCase();
+                                            }
+                                        })} 
                                         placeholder="Zona"
-                                        onChange={(e) => {
-                                            e.target.value = e.target.value.toUpperCase();
-                                        }}
                                     />
                                 </div>
 
@@ -631,11 +736,12 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                                 [&:not(:placeholder-shown)]:border-[#215F99]
                                                 [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
                                             `}
-                                        {...register("datosPersonales.direccion.avenida")} 
+                                        {...register("datosPersonales.direccion.avenida", {
+                                            onChange: (e) => {
+                                                e.target.value = e.target.value.toUpperCase();
+                                            }
+                                        })} 
                                         placeholder="Avenida"
-                                        onChange={(e) => {
-                                            e.target.value = e.target.value.toUpperCase();
-                                        }}
                                     />
                                 </div>
 
@@ -649,12 +755,34 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
                                                 [&:not(:placeholder-shown)]:border-[#215F99]
                                                 [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
                                             `}
-                                        {...register("datosPersonales.direccion.calle")} 
+                                       {...register("datosPersonales.direccion.calle", {
+                                            onChange: (e) => {
+                                                e.target.value = e.target.value.toUpperCase();
+                                            }
+                                        })} 
                                         placeholder="Calle"
-                                        onChange={(e) => {
-                                            e.target.value = e.target.value.toUpperCase();
-                                        }}
                                     />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                <label className="font-medium text-sm text-[#215F99]">
+                                    Urbanización
+                                </label>
+
+                                <Input
+                                    className={`
+                                    ${inputBaseStyle}
+                                    uppercase
+                                    [&:not(:placeholder-shown)]:bg-[#EDF2F7]
+                                    [&:not(:placeholder-shown)]:border-[#215F99]
+                                    [&:not(:placeholder-shown)]:shadow-[0_2px_6px_rgba(33,95,153,0.15)]
+                                    `}
+                                    {...register("datosPersonales.direccion.urbanizacion", {
+                                    onChange: (e) => {
+                                        e.target.value = e.target.value.toUpperCase();
+                                    }
+                                    })}
+                                    placeholder="Urbanización"
+                                />
                                 </div>
 
                                 <div className="flex flex-col gap-1">
@@ -796,63 +924,69 @@ export const DeclaracionForm = ({ declaracion }: { declaracion?: DeclaracionData
 
                         {/* Submit */}
                         {/* BOTÓN SIEMPRE VISIBLE EN PANTALLA */}
-                        <div className="fixed right-10 bottom-20 z-[9999]">
-<Button
-  type="submit"
-  className="
-    group relative
-    flex items-center gap-4
-    px-10 py-8
-    rounded-xl
-    bg-gradient-to-br from-[#215F99] to-[#1B4F7D]
-    text-white
-    shadow-[0_10px_25px_rgba(33,95,153,0.35)]
-    hover:shadow-[0_14px_35px_rgba(33,95,153,0.45)]
-    transition-all duration-300 ease-out
-    hover:-translate-y-[2px]
-    active:translate-y-0
-    active:shadow-[0_6px_15px_rgba(33,95,153,0.35)]
-  "
->
-  {/* ICONO */}
-  <span
-    className="
-      flex items-center justify-center
-      w-11 h-11
-      rounded-lg
-      bg-white/10
-      backdrop-blur-sm
-      shadow-inner
-      transition-transform duration-300
-      group-hover:scale-110
-    "
-  >
-    <svg
-      className="w-6 h-6 text-white drop-shadow-sm"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={3}
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 10l5 5m0 0 5-5m-5 5V4"
-      />
-    </svg>
-  </span>
+                        <div className="
+                        fixed z-[9999]
+                        right-4 bottom-4
+                        sm:right-6 sm:bottom-6
+                        lg:right-10 lg:bottom-20
+                        ">
 
-  {/* TEXTO */}
-  <div className="flex flex-col leading-tight text-left">
-    <span className="text-lg font-extrabold tracking-wide">
-      {declaracion?._id ? "Actualizar" : "Crear"}
-    </span>
+                        <Button
+                        type="submit"
+                        className="
+                            group relative
+                            flex items-center gap-4
+                            px-10 py-8
+                            rounded-xl
+                            bg-gradient-to-br from-[#215F99] to-[#1B4F7D]
+                            text-white
+                            shadow-[0_10px_25px_rgba(33,95,153,0.35)]
+                            hover:shadow-[0_14px_35px_rgba(33,95,153,0.45)]
+                            transition-all duration-300 ease-out
+                            hover:-translate-y-[2px]
+                            active:translate-y-0
+                            active:shadow-[0_6px_15px_rgba(33,95,153,0.35)]
+                        "
+                        >
+                        {/* ICONO */}
+                        <span
+                            className="
+                            flex items-center justify-center
+                            w-11 h-11
+                            rounded-lg
+                            bg-white/10
+                            backdrop-blur-sm
+                            shadow-inner
+                            transition-transform duration-300
+                            group-hover:scale-110
+                            "
+                        >
+                            <svg
+                            className="w-6 h-6 text-white drop-shadow-sm"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={3}
+                            viewBox="0 0 24 24"
+                            >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 10l5 5m0 0 5-5m-5 5V4"
+                            />
+                            </svg>
+                        </span>
 
-    <span className="text-sm font-medium text-white/85">
-      y descargar Declaración Jurada
-    </span>
-  </div>
-</Button>
+                        {/* TEXTO */}
+                        <div className="flex flex-col leading-tight text-left">
+                            <span className="text-lg font-extrabold tracking-wide">
+                            {declaracion?._id ? "Actualizar" : "Crear"}
+                            </span>
+
+                            <span className="text-sm font-medium text-white/85">
+                            y descargar Declaración Jurada
+                            </span>
+                        </div>
+                        </Button>
 
 </div>
 
