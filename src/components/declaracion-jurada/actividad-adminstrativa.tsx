@@ -421,14 +421,19 @@ const ActividadAdminItem: React.FC<ActividadAdminItemProps> = ({ control, index,
                         )}
                     />
                 </div>
+                 <div className="flex flex-col gap-3 w-full col-span-1 sm:col-span-2 lg:col-span-3">
+    <label className="font-semibold text-sm text-[#215F99]">Actividad administrativa ejercida desde la fecha de inicio hasta la fecha de fin.</label>
+ </div>
                 {/* Fecha Inicio */}
                 <div className="flex flex-col gap-1">
+                    <label className="text-xs font-normal text-[#215F99] dark:text-gray-400">
+                        Fecha Inicio
+                    </label>
                 <Controller
   name={`actividadAdministrativa.${index}.fechaInicio`}
   control={control}
   render={({ field }) => (
     <DatePicker
-      label="Fecha Inicio"
       placeholder="DD/MM/YYYY"
       value={
         field.value
@@ -444,12 +449,14 @@ const ActividadAdminItem: React.FC<ActividadAdminItemProps> = ({ control, index,
 
                 {/* Fecha Fin */}
                 <div className="flex flex-col gap-1">
+                    <label className="text-xs font-normal text-[#215F99] dark:text-gray-400">
+                        Fecha Fin
+                    </label>
                 <Controller
   name={`actividadAdministrativa.${index}.fechaFin`}
   control={control}
   render={({ field }) => (
     <DatePicker
-      label="Fecha Fin"
       placeholder="DD/MM/YYYY"
       value={
         field.value

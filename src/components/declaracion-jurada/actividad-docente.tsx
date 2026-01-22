@@ -427,13 +427,7 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                             <Plus className="w-4 h-4" />
                             Añadir horario
                         </Button>
-                        </>
-                    );
-                    }}
-                />
-                </div>
-
-                {/* Total Ganado Bs */}
+                        {/* Total Ganado Bs */}
                 <div className="flex flex-col gap-1 w-full">
                     <label className="font-medium text-sm text-[#215F99]">Total Ganado Bs</label>
                     <Controller
@@ -460,10 +454,24 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                         )}
                     />
                 </div>
+                                {/* Texto superior */}
+<div className="w-full mb-2">
+  <p className="text-sm font-semibold text-[#215F99] dark:text-gray-300">
+    Actividad docente realizada desde la fecha de inicio hasta la fecha de fin.
+  </p>
+</div>
+                        </>
+                    );
+                    }}
+                />
+                </div>
+
+
                 {/* Fecha Inicio */}
                 <div className="flex flex-col gap-1">
-                
-
+<label className="text-xs font-normal text-[#215F99] dark:text-gray-400">
+                        Fecha Inicio
+                    </label>
                 <Controller
                 name={`actividadDocente.${index}.fechaInicio`}
                 control={control}
@@ -475,7 +483,7 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                         : ""
                     }
                     onChange={field.onChange}
-                    label="Fecha Inicio"
+       
                     placeholder="DD/MM/YYYY"
                     />
                 )}
@@ -484,7 +492,9 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                 </div>
                 {/* Fecha Fin */}
                 <div className="flex flex-col gap-1">
-                
+                <label className="text-xs font-normal text-[#215F99] dark:text-gray-400">
+                        Fecha Fin
+                    </label>
 
                 <Controller
                 name={`actividadDocente.${index}.fechaFin`}
@@ -497,7 +507,6 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                         : ""
                     }
                     onChange={field.onChange}
-                    label="Fecha Fin"
                     placeholder="DD/MM/YYYY"
                     />
                 )}

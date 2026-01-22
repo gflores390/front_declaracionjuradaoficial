@@ -188,7 +188,7 @@ const JubiladoItem: React.FC<JubiladoItemProps> = ({ control, index, removeJubil
                 )}
 
             {/* Botón eliminar */}
-           <CardContent className="flex justify-end pt-0">
+           <CardContent className="flex justify-end pt-0 gap-4">
                                      <>
                                       <Button
                                       size="sm"

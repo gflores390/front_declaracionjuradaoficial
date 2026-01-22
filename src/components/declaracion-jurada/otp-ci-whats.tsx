@@ -29,6 +29,7 @@ export default function OtpComponent() {
   const inputRef = useRef<HTMLInputElement>(null)
   const phoneInputRef = useRef<HTMLInputElement>(null)
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
+  const [phoneError, setPhoneError] = useState("")
 
   useEffect(() => {
     const isComplete = otp.every((d) => d !== "")
@@ -203,7 +204,7 @@ export default function OtpComponent() {
   }
 
   return (
-    <div className="flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-*">
       <Card className="w-full max-w-md bg-white/1 backdrop-blur-lg border-2 border-[#01195F]/20 shadow-2xl shadow-[#01195F]/10 relative overflow-hidden">
         {/* Borde brillante superior - amarillo */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
@@ -241,9 +242,19 @@ export default function OtpComponent() {
                     <Input
                       ref={inputRef}
                       type="text"
-                      placeholder="Número de CI"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={ci}
-                      onChange={(e) => setCi(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        if (!/^\d*$/.test(value)) {
+                          setCiError("El CI solo debe contener números")
+                          return
+                        }
+                        setCiError("")
+                        setCi(value)
+                      }}
+                      placeholder="Ingresa tu CI"
                       onKeyPress={handleKeyPress}
                       className="h-12 pl-4 pr-4 bg-white border-2 border-[#01195F]/30 rounded-xl text-slate-800 placeholder:text-slate-400 focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 transition-all duration-300 text-base shadow-sm hover:shadow-md"
                       disabled={isLoading}
@@ -277,12 +288,24 @@ export default function OtpComponent() {
                 <p className="text-lg font-semibold text-[#EEF1FA] tracking-wide">{maskedPhone}</p>
               </div>
               <div className="relative group">
-                <Input
+                <Input             
                   ref={phoneInputRef}
                   type="tel"
-                  placeholder="Confirma tu número completo"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value
+
+                    if (!/^\d*$/.test(value)) {
+                      setPhoneError("El número de celular solo debe contener números")
+                      return
+                    }
+
+                    setPhoneError("")
+                    setPhone(value)
+                  }}
+                  placeholder="Confirma o ingresa tu número de celular"
                   onKeyPress={handleKeyPress}
                   className="h-12 pl-4 pr-4 bg-white border-2 border-[#01195F]/30 rounded-xl text-slate-800 placeholder:text-slate-400 focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 transition-all duration-300 text-base shadow-sm hover:shadow-md"
                   disabled={isLoading}
@@ -290,6 +313,15 @@ export default function OtpComponent() {
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#01195F]/0 via-[#013991]/0 to-[#01195F]/0 group-hover:from-[#01195F]/5 group-hover:via-[#013991]/5 group-hover:to-[#01195F]/5 pointer-events-none transition-all duration-300"></div>
               </div>
             </div>
+          )}
+          {phoneError && (
+            <Alert className="border-red-200 bg-red-50/80 backdrop-blur-sm">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertTitle className="text-red-800 font-semibold">Error</AlertTitle>
+              <AlertDescription className="text-red-700">
+                {phoneError}
+              </AlertDescription>
+            </Alert>
           )}
 
           {step === "otp" && (
@@ -321,19 +353,18 @@ export default function OtpComponent() {
                   </div>
                 ))}
               </div>
+                <div className="flex justify-center gap-2 mt-2">
+  {otp.map((digit, index) => (
+    <div
+      key={index}
+      className={`w-8 h-1 rounded-full transition-all
+        ${digit ? "bg-[#01195F]" : "bg-[#01195F]/20"}
+      `}
+    />
+  ))}
+</div>
 
-              <div className="flex justify-center gap-1.5 sm:gap-2.5 px-4 sm:px-6">
-                {[...Array(6)].map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-1.5 flex-1 max-w-[2.25rem] sm:max-w-[2.75rem] rounded-full transition-all duration-300 ${
-                      index < otp.filter((d) => d !== "").length
-                        ? "bg-gradient-to-r from-[#C07601] to-[#FFE59D] shadow-md shadow-[#01195F]/30"
-                        : "bg-slate-200"
-                    }`}
-                  />
-                ))}
-              </div>
+             
 
               {autoVerifyTimer > 0 && (
                 <div className="flex items-center justify-center gap-2 text-sm text-[#01195F] animate-pulse">

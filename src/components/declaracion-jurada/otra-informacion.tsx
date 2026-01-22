@@ -175,14 +175,21 @@ const OtraInfoItem: React.FC<OtraInfoItemProps> = ({ control, index, removeOtra,
               )}
             />
           </div>
+
+            <div className="flex flex-col gap-3 w-full col-span-1 sm:col-span-2 lg:col-span-3">
+    <label className="font-semibold text-sm text-[#215F99]">Otra actividad relevante registrada desde la fecha de inicio hasta la fecha de fin.</label>
+ </div>
           {/* Fecha inicio */}
           <div className="flex flex-col gap-1">
+            <label className="text-xs font-normal text-[#215F99] dark:text-gray-400">
+                        Fecha Inicio
+                    </label>
   <Controller
   name={`otraInformacion.${index}.fechaInicio`}
   control={control}
   render={({ field }) => (
     <DatePicker
-      label="Fecha Inicio"
+      
       placeholder="DD/MM/YYYY"
       value={
         field.value
@@ -198,12 +205,15 @@ const OtraInfoItem: React.FC<OtraInfoItemProps> = ({ control, index, removeOtra,
           {/* Fecha fin */}
 
           <div className="flex flex-col gap-1">
+            <label className="text-xs font-normal text-[#215F99] dark:text-gray-400">
+                        Fecha Fin
+                    </label>
   <Controller
   name={`otraInformacion.${index}.fechaFin`}
   control={control}
   render={({ field }) => (
     <DatePicker
-      label="Fecha Fin"
+      
       placeholder="DD/MM/YYYY"
       value={
         field.value
@@ -232,7 +242,7 @@ const OtraInfoItem: React.FC<OtraInfoItemProps> = ({ control, index, removeOtra,
                 </div>
                 )}
               {/* Botón eliminar */}
-           <CardContent className="flex justify-end pt-0">
+           <CardContent className="flex justify-end pt-0 gap-4">
                                      <>
                                       <Button
                                       size="sm"
