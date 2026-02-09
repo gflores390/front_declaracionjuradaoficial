@@ -13,6 +13,7 @@ import { AlertTriangle, FilePlus, Sparkles, Shield, Lock } from "lucide-react"
 export default function OtpComponent() {
   const router = useRouter()
   const [ci, setCi] = useState("")
+  
   const [step, setStep] = useState<"ci" | "confirm" | "otp">("ci")
   const [maskedPhone, setMaskedPhone] = useState("")
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
@@ -52,34 +53,56 @@ export default function OtpComponent() {
   }, [step])
 
   const handleSearch = async ({ ci }: { ci: string }) => {
+    // Limpiar errores previos
     setCiError("")
     setIsLoading(true)
+    
+    // Validar que el CI no esté vacío
     if (!ci.trim()) {
       setCiError("Por favor ingresa tu CI")
       setIsLoading(false)
       return
     }
+    
+    // Validar longitud mínima del CI
     if (ci.trim().length < 5) {
       setCiError("El CI debe tener al menos 5 dígitos")
       setIsLoading(false)
       return
     }
+    
     try {
+      // Intentar verificar si el CI existe en la BD
       const data = await verificacionCi(ci)
+      
       if (data.numero) {
+        // ✅ Usuario ANTIGUO - El CI fue encontrado en la BD
+        // - Obtiene: número de teléfono, ID de declaración y persona
+        // - setAllowCreate(false) → No muestra alerta "Atención"
+        // - setStep("confirm") → Pasa al paso de confirmación de teléfono
         setMaskedPhone(data.numero)
         setUserId(data.declaracion)
         setPersona(data.persona)
-        setStep("confirm")
-        setAllowCreate(false)
+        setAllowCreate(false) // No es usuario nuevo
+        setStep("confirm") // Ir al paso de confirmación
         if (data.telefono) {
           setPhone(data.telefono)
         }
       } else {
-        setAllowCreate(true)
+        // ⚠️ Usuario NUEVO - No existe en la BD (caso: data no retorna número)
+        // - setUserId('new') → Marcarlo como usuario nuevo
+        // - setAllowCreate(true) → Mostrar alerta "Atención"
+        // - NO cambiar de paso aún (usuario verá alerta con botón para continuar)
+        setUserId('new')
+        setAllowCreate(true) // Mostrar alerta "Atención"
       }
     } catch (error: unknown) {
-      setAllowCreate(true)
+      // ⚠️ Usuario NUEVO - Error en búsqueda = CI no existe en la BD
+      // - Mismo flujo que arriba
+      console.log("[v0] Usuario nuevo detectado (CI no existe)");
+      setUserId('new')
+      setAllowCreate(true) // Mostrar alerta "Atención"
+      toast.info("Iniciarás como usuario nuevo - Completa tu registro")
     } finally {
       setIsLoading(false)
     }
@@ -96,14 +119,24 @@ export default function OtpComponent() {
   }
 
   const sendOtp = async () => {
+    // Enviar OTP al teléfono del usuario (nuevo o antiguo)
     setIsLoading(true)
     try {
+      // Validar que el teléfono no esté vacío
       if (!phone.trim()) {
         toast.error("Por favor ingresa tu número de celular")
         return
       }
+      
+      // Llamar API para enviar el código OTP al teléfono
+      // - Si es usuario ANTIGUO: persona viene de verificacionCi
+      // - Si es usuario NUEVO: persona está vacío o es nuevo
       const data = await sendOtpApi(phone, persona)
+      
+      // Establecer el tiempo de expiración del OTP (ej. 5 minutos = 300 segundos)
       setTimer(data.otpInfo.duracionSegundos)
+      
+      // Pasar al paso "otp" para que el usuario ingrese el código que recibió
       setStep("otp")
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Error al enviar código"
@@ -143,41 +176,92 @@ export default function OtpComponent() {
   }
 
   const handleVerifyOtp = async () => {
+    // Evitar múltiples verificaciones simultáneas
     if (verifyingRef.current) {
       return
     }
     verifyingRef.current = true
+    
+    // Unir los 6 dígitos del OTP en un solo string
     const otpToVerify = otp.join("")
     setIsLoading(true)
+    
     try {
+      // Llamar API para verificar el código OTP
       const data = await verifyOtpApi(otpToVerify)
+      
       if (!data.valido) {
+        // Si el código es inválido, mostrar error y permitir reintentar
         toast.error(data.message || "Código inválido, vuelve a intentarlo")
         return
       }
+      
+      // ✅ OTP VÁLIDO - Proceder a crear sesión
+      // userId puede ser:
+      //   - Un ID real (usuario antiguo): ej. "12345"
+      //   - 'new' (usuario nuevo): usuario nunca antes visto
+      // Si por alguna razón userId es vacío, usar 'new'
+      const finalUserId = userId || 'new'
+      console.log("[v0] OTP válido. Creando sesión con userId:", finalUserId, "ci:", ci)
+      
+      // Importar dinámicamente la función crearSesion del servidor
+      // Esta función crea un JWT en una cookie HTTP-only (más seguro que localStorage)
       const sessionModule = await import('@/lib/session')
       const { crearSesion } = sessionModule
-      await crearSesion(userId, ci)
+      
+      // Guardar la sesión JWT (userId + ci en la cookie)
+      await crearSesion(finalUserId, ci)
+      
+      // Esperar un poco para que la cookie se establezca correctamente
       await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Mostrar mensaje de éxito
       toast.success("¡Acceso concedido!")
-      if (userId) {
-        router.push(`/declaracion-jurada/${userId}/edit`)
-      } else {
-        router.push(`/declaracion-jurada/nueva`)
-      }
+      
+      // Redirigir al menú intermedio
+      // AQUÍ es donde AMBOS tipos de usuarios (nuevo y antiguo) pasan por el menú
+      // El menú decidirá si mostrar "Crear Declaración Jurada" (nuevo) o "Declaración Jurada" (antiguo)
+      router.push(`/declaracion-jurada/menu`)
+      
+      // Refrescar la página para que useAuth lea la sesión nueva
       router.refresh()
     } catch (error: unknown) {
+      // Si algo falla, mostrar error
       const errorMessage = error instanceof Error ? error.message : "Error al verificar código"
       toast.error(errorMessage)
+      
+      // Limpiar OTP para reintentar
       setOtpValid(false)
       setOtp(["", "", "", "", "", ""])
       setAutoVerifyTimer(0)
+      
+      // Devolver el foco al primer input del OTP
       setTimeout(() => {
         otpRefs.current[0]?.focus()
       }, 100)
     } finally {
       setIsLoading(false)
       verifyingRef.current = false
+    }
+  }
+  const continuarComoNuevo = async () => {
+    try {
+      setIsLoading(true)
+
+      const sessionModule = await import("@/lib/session")
+      const { crearSesion } = sessionModule
+
+      // userId = 'new'
+      await crearSesion("new", ci)
+
+      toast.success("Sesión iniciada como usuario nuevo")
+
+      router.push("/declaracion-jurada/menu")
+      router.refresh()
+    } catch (error) {
+      toast.error("Error al iniciar sesión")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -270,13 +354,16 @@ export default function OtpComponent() {
                   )}
                 </div>
               ) : (
-                <Alert className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm shadow-lg">
-                  <AlertTriangle className="h-5 w-5 text-amber-600" />
-                  <AlertTitle className="text-amber-900 font-semibold">Atención</AlertTitle>
-                  <AlertDescription className="text-amber-800">
-                    No se encontró un usuario con ese CI, puedes crear una nueva declaración.
-                  </AlertDescription>
-                </Alert>
+                <div className="space-y-3">
+                  <Alert className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 backdrop-blur-sm shadow-lg">
+                    <FilePlus className="h-5 w-5 text-blue-600" />
+                    <AlertTitle className="text-blue-900 font-semibold">Nuevo Usuario</AlertTitle>
+                    <AlertDescription className="text-blue-800">
+                      Iniciarás sesión como usuario nuevo. Completa tu declaración.
+                    </AlertDescription>
+                  </Alert>
+
+                </div>
               )}
             </>
           )}
@@ -397,24 +484,28 @@ export default function OtpComponent() {
                     </span>
                   )}
                 </Button>
-              ) : (
+              ) 
+              : (
                 <div className="w-full flex gap-2">
-                  <Button
-                    onClick={handleCancel}
-                    variant="outline"
-                    className="flex-1 h-12 border-2 border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={() => router.push(`/declaracion-jurada/nueva`)}
-                    className="flex-1 h-12 bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white font-semibold rounded-xl shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    <FilePlus className="w-5 h-5 mr-2" />
-                    Crear
-                  </Button>
-                </div>
-              )}
+        <Button
+          onClick={handleCancel}
+          variant="outline"
+          className="flex-1 h-12 border-2 border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+        >
+          Cancelar
+        </Button>
+
+        <Button
+          onClick={continuarComoNuevo}
+          disabled={isLoading}
+          className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-600/90 hover:to-indigo-600/90 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.02]"
+        >
+          <FilePlus className="w-5 h-5 mr-2" />
+          Continuar
+        </Button>
+      </div>
+              )
+              }
             </>
           )}
 

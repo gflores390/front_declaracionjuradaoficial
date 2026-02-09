@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 export interface UserData {
   userId: string;
   ci?: string;
-  persona?: string;
-  phone?: string;
 }
 
 export const useAuth = () => {
@@ -15,48 +13,47 @@ export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const createSession = (userData: UserData, expirationHours = 2) => {
-    const expiryTime = new Date();
-    expiryTime.setHours(expiryTime.getHours() + expirationHours);
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/session', {
+        method: 'GET',
+        credentials: 'include',
+      });
 
-    localStorage.setItem('declaracionSession', JSON.stringify(userData));
-    localStorage.setItem('sessionExpiry', expiryTime.toISOString());
-
-    setUserInfo(userData);
-    setIsAuthenticated(true);
-  };
-
-  const clearSession = () => {
-    localStorage.removeItem('declaracionSession');
-    localStorage.removeItem('sessionExpiry');
-    setUserInfo(null);
-    setIsAuthenticated(false);
-  };
-
-  const checkAuth = () => {
-    const sessionData = localStorage.getItem('declaracionSession');
-    const sessionExpiry = localStorage.getItem('sessionExpiry');
-
-    if (sessionData && sessionExpiry) {
-      const expiryTime = new Date(sessionExpiry);
-      if (new Date() < expiryTime) {
-        setUserInfo(JSON.parse(sessionData));
+      if (response.ok) {
+        const data = await response.json();
+        console.log('[useAuth] Session data:', data);
+        setUserInfo({
+          userId: data.userId,
+          ci: data.ci,
+        });
         setIsAuthenticated(true);
       } else {
-        clearSession();
+        console.log('[useAuth] No session found');
+        setIsAuthenticated(false);
       }
+    } catch (error) {
+      console.error('[useAuth] Error checking auth:', error);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  const logout = () => {
-    clearSession();
-    router.replace('/'); // redirige al home
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch (error) {
+      console.error('[useAuth] Error logging out:', error);
+    }
+    setIsAuthenticated(false);
+    setUserInfo(null);
+    router.replace('/');
   };
 
   useEffect(() => {
     checkAuth();
   }, []);
 
-  return { isAuthenticated, userInfo, isLoading, createSession, logout };
+  return { isAuthenticated, userInfo, isLoading, logout };
 };
