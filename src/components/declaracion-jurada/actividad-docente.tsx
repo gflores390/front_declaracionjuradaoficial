@@ -156,7 +156,7 @@ const ActividadItem: React.FC<ActividadItemProps> = ({ control, index, removeDoc
                 <div className="flex flex-col gap-1">
                     <label className="text-sm font-medium text-[#215F99]">Carrera / Instituto</label>
                     <Controller
-                        name={`actividadDocente.${index}.carreraInstituto`}
+                        name={`actividadDocente.${index}.materiaSigla`}
                         control={control}
                         render={({ field }) => (
                             <Select value={field.value ?? ""} onValueChange={field.onChange}>

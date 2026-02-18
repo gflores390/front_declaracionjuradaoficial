@@ -14,7 +14,6 @@ import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { toast } from "sonner";
 import { DeclaracionData } from "@/app/declaracion-jurada/declaracion-jurada.interface";
-import { deleteDeclaracion } from "@/app/declaracion-jurada/declaracion-jurada.api";
 import { revalidate } from "@/lib/actions";
 import Link from "next/link";
 import ModalPDF from "./modal-pdf";
@@ -26,7 +25,6 @@ export function DeclaracionTable({ declaracion }: { declaracion: DeclaracionData
     const handleDelete = async (_id: string) => {
         setLoadingButtons((prev) => ({ ...prev, [`delete-${_id}`]: true }));
         try {
-            await deleteDeclaracion(_id);
             await revalidate("/declaracion-jurada");
             toast.success("Declaración Jurada eliminada con éxito");
         } catch (error) {

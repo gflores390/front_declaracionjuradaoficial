@@ -1,296 +1,274 @@
 "use client";
-import { useState, useEffect, useRef } from "react"
-import type React from "react"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import { sendOtpApi, verificacionCi, verifyOtpApi } from "../../app/declaracion-jurada/declaracion-jurada.api"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { AlertTriangle, FilePlus, Sparkles, Shield, Lock } from "lucide-react"
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, Shield, Lock, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  sendOtpApi,
+  verificacionCi,
+  verifyOtpApi,
+} from "@/app/declaracion-jurada/declaracion-jurada.api";
 
-export default function OtpComponent() {
-  const router = useRouter()
-  const [ci, setCi] = useState("")
+type Step = "ci" | "celular" | "otp" | "ok";
+
+export default function OtpCiWhats() {
+  const router = useRouter();
+  const [step, setStep] = useState<Step>("ci");
+  const [ci, setCi] = useState("");
+  const [celular, setCelular] = useState("");
+  const [maskedPhone, setMaskedPhone] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [timer, setTimer] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [ciError, setCiError] = useState("");
+  const [celularError, setCelularError] = useState("");
+  const [intentos, setIntentos] = useState(0);
+  const [maxIntentos, setMaxIntentos] = useState(3);
   
-  const [step, setStep] = useState<"ci" | "confirm" | "otp">("ci")
-  const [maskedPhone, setMaskedPhone] = useState("")
-  const [otp, setOtp] = useState(["", "", "", "", "", ""])
-  const [timer, setTimer] = useState(0)
-  const [userId, setUserId] = useState("")
-  const [allowCreate, setAllowCreate] = useState(false)
-  const [ciError, setCiError] = useState("")
-  const [phone, setPhone] = useState("")
-  const [persona, setPersona] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [autoVerifyTimer, setAutoVerifyTimer] = useState(0)
-  const [otpValid, setOtpValid] = useState(false)
-  const verifyingRef = useRef(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const phoneInputRef = useRef<HTMLInputElement>(null)
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([])
-  const [phoneError, setPhoneError] = useState("")
+  const ciInputRef = useRef<HTMLInputElement>(null);
+  const celularInputRef = useRef<HTMLInputElement>(null);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const verifyingRef = useRef(false);
 
+  /* ================= AUTO FOCUS ================= */
   useEffect(() => {
-    const isComplete = otp.every((d) => d !== "")
-    if (isComplete && !isLoading) {
-      const timeout = setTimeout(() => {
-        handleVerifyOtp()
-      }, 500)
-      return () => clearTimeout(timeout)
-    }
-  }, [otp, isLoading])
-
-  useEffect(() => {
-    if (step === "ci" && inputRef.current) {
-      inputRef.current.focus()
-    } else if (step === "confirm" && phoneInputRef.current) {
-      phoneInputRef.current.focus()
+    if (step === "ci" && ciInputRef.current) {
+      ciInputRef.current.focus();
+    } else if (step === "celular" && celularInputRef.current) {
+      celularInputRef.current.focus();
     } else if (step === "otp" && otpRefs.current[0]) {
-      otpRefs.current[0]?.focus()
+      otpRefs.current[0]?.focus();
     }
-  }, [step])
+  }, [step]);
 
-  const handleSearch = async ({ ci }: { ci: string }) => {
-    // Limpiar errores previos
-    setCiError("")
-    setIsLoading(true)
+  /* ================= TIMER ================= */
+  useEffect(() => {
+    if (timer <= 0) return;
+    const i = setInterval(() => setTimer((t) => t - 1), 1000);
+    return () => clearInterval(i);
+  }, [timer]);
+
+  /* ================= AUTO VERIFY OTP ================= */
+  useEffect(() => {
+    const isComplete = otp.every((d) => d !== "");
+    if (isComplete && !loading && step === "otp") {
+      const timeout = setTimeout(() => {
+        handleVerifyOtp();
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [otp, loading, step]);
+
+  /* ================= PASO 1: VERIFICAR CI ================= */
+  const handleVerifyCi = async () => {
+    setCiError("");
     
-    // Validar que el CI no esté vacío
     if (!ci.trim()) {
-      setCiError("Por favor ingresa tu CI")
-      setIsLoading(false)
-      return
+      setCiError("Por favor ingresa tu CI");
+      return;
     }
     
-    // Validar longitud mínima del CI
     if (ci.trim().length < 5) {
-      setCiError("El CI debe tener al menos 5 dígitos")
-      setIsLoading(false)
-      return
+      setCiError("El CI debe tener al menos 5 dígitos");
+      return;
     }
-    
+
+    setLoading(true);
     try {
-      // Intentar verificar si el CI existe en la BD
-      const data = await verificacionCi(ci)
+      const res = await verificacionCi(ci);
       
-      if (data.numero) {
-        // ✅ Usuario ANTIGUO - El CI fue encontrado en la BD
-        // - Obtiene: número de teléfono, ID de declaración y persona
-        // - setAllowCreate(false) → No muestra alerta "Atención"
-        // - setStep("confirm") → Pasa al paso de confirmación de teléfono
-        setMaskedPhone(data.numero)
-        setUserId(data.declaracion)
-        setPersona(data.persona)
-        setAllowCreate(false) // No es usuario nuevo
-        setStep("confirm") // Ir al paso de confirmación
-        if (data.telefono) {
-          setPhone(data.telefono)
+      if (res.status === "success") {
+        // Si el backend retorna un número enmascarado, usarlo
+        if (res.numero) {
+          setMaskedPhone(res.numero);
         }
+        toast.success("CI verificado correctamente");
+        setStep("celular");
       } else {
-        // ⚠️ Usuario NUEVO - No existe en la BD (caso: data no retorna número)
-        // - setUserId('new') → Marcarlo como usuario nuevo
-        // - setAllowCreate(true) → Mostrar alerta "Atención"
-        // - NO cambiar de paso aún (usuario verá alerta con botón para continuar)
-        setUserId('new')
-        setAllowCreate(true) // Mostrar alerta "Atención"
+        setCiError("CI no registrado en el sistema");
+        toast.error("CI no encontrado");
       }
-    } catch (error: unknown) {
-      // ⚠️ Usuario NUEVO - Error en búsqueda = CI no existe en la BD
-      // - Mismo flujo que arriba
-      console.log("[v0] Usuario nuevo detectado (CI no existe)");
-      setUserId('new')
-      setAllowCreate(true) // Mostrar alerta "Atención"
-      toast.info("Iniciarás como usuario nuevo - Completa tu registro")
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Error al verificar CI";
+      setCiError(errorMsg);
+      toast.error(errorMsg);
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      if (step === "ci" && !isLoading && ci.trim().length >= 5) {
-        handleSearch({ ci })
-      } else if (step === "confirm" && phone.trim() && !isLoading) {
-        sendOtp()
-      }
+  /* ================= PASO 2: ENVIAR OTP ================= */
+  const handleSendOtp = async () => {
+    setCelularError("");
+    
+    if (!celular.trim()) {
+      setCelularError("Por favor ingresa tu número de celular");
+      return;
     }
-  }
 
-  const sendOtp = async () => {
-    // Enviar OTP al teléfono del usuario (nuevo o antiguo)
-    setIsLoading(true)
+    if (!/^\d+$/.test(celular)) {
+      setCelularError("El número de celular solo debe contener números");
+      return;
+    }
+
+    setLoading(true);
     try {
-      // Validar que el teléfono no esté vacío
-      if (!phone.trim()) {
-        toast.error("Por favor ingresa tu número de celular")
-        return
+      const response = await sendOtpApi({ 
+        celular: celular.trim(), 
+        personaCi: ci.trim() 
+      });
+      
+      // Capturar información de intentos si el backend la envía
+      // Acceder a response.data ya que sendOtpApi retorna AxiosResponse
+      const data = response.data || response;
+      
+      if (data.intentos !== undefined) {
+        setIntentos(data.intentos);
+      }
+      if (data.maxIntentos !== undefined) {
+        setMaxIntentos(data.maxIntentos);
       }
       
-      // Llamar API para enviar el código OTP al teléfono
-      // - Si es usuario ANTIGUO: persona viene de verificacionCi
-      // - Si es usuario NUEVO: persona está vacío o es nuevo
-      const data = await sendOtpApi(phone, persona)
+      // Mostrar advertencia según intentos
+      if (data.intentos === 1) {
+        toast.warning("Primer intento de verificación", {
+          description: "Tienes 2 intentos restantes"
+        });
+      } else if (data.intentos === 2) {
+        toast.error("Segundo intento de verificación", {
+          description: "¡Último intento disponible!"
+        });
+      }
       
-      // Establecer el tiempo de expiración del OTP (ej. 5 minutos = 300 segundos)
-      setTimer(data.otpInfo.duracionSegundos)
-      
-      // Pasar al paso "otp" para que el usuario ingrese el código que recibió
-      setStep("otp")
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Error al enviar código"
-      toast.error(errorMessage)
+      setTimer(data.otpInfo?.duracionSegundos || 180);
+      toast.success("Código enviado a WhatsApp");
+      setStep("otp");
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Error al enviar OTP";
+      setCelularError(errorMsg);
+      toast.error(errorMsg);
     } finally {
-      setIsLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) return
-    const newOtp = [...otp]
-    newOtp[index] = value
-    setOtp(newOtp)
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus()
+  /* ================= PASO 3: VERIFICAR OTP ================= */
+ // Reemplaza la sección donde guardas en localStorage:
+
+// ❌ ELIMINA ESTO:
+// localStorage.setItem("dj_autorizado", "true");
+// localStorage.setItem("dj_ci", ci);
+
+// ✅ REEMPLAZA con:
+const handleVerifyOtp = async () => {
+  try {
+    const codigoCompleto = otp.join("");
+
+    if (codigoCompleto.length !== 6) {
+      toast.error("El código debe tener 6 dígitos");
+      return;
     }
+
+    setLoading(true);
+
+    const response = await verifyOtpApi({
+      personaCi: ci.trim(),
+      codigo: codigoCompleto,
+    });
+
+    const data = response.data;
+
+    if (data.status === "success") {
+      const token = data.data.token;
+
+      await fetch("/api/auth/crear-sesion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      toast.success("¡Verificación exitosa!");
+      router.push("/declaracion-jurada/menu");
+    } else {
+      toast.error("Código incorrecto");
+    }
+  } catch (error: any) {
+    toast.error(
+      error.response?.data?.message || "Código incorrecto"
+    );
+  } finally {
+    setLoading(false);
   }
+};
+
+  /* ================= MANEJO DE OTP INPUTS ================= */
+  const handleOtpChange = (index: number, value: string) => {
+    if (value && !/^\d$/.test(value)) return;
+    
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+    
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+  };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus()
+      otpRefs.current[index - 1]?.focus();
     } else if (e.key === "ArrowLeft" && index > 0) {
-      otpRefs.current[index - 1]?.focus()
+      otpRefs.current[index - 1]?.focus();
     } else if (e.key === "ArrowRight" && index < 5) {
-      otpRefs.current[index + 1]?.focus()
+      otpRefs.current[index + 1]?.focus();
     }
-  }
+  };
 
   const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "")
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "");
     if (pasteData.length >= 6) {
-      const digits = pasteData.slice(0, 6).split("")
-      setOtp(digits)
+      const digits = pasteData.slice(0, 6).split("");
+      setOtp(digits);
     }
-  }
+  };
 
-  const handleVerifyOtp = async () => {
-    // Evitar múltiples verificaciones simultáneas
-    if (verifyingRef.current) {
-      return
-    }
-    verifyingRef.current = true
-    
-    // Unir los 6 dígitos del OTP en un solo string
-    const otpToVerify = otp.join("")
-    setIsLoading(true)
-    
-    try {
-      // Llamar API para verificar el código OTP
-      const data = await verifyOtpApi(otpToVerify)
-      
-      if (!data.valido) {
-        // Si el código es inválido, mostrar error y permitir reintentar
-        toast.error(data.message || "Código inválido, vuelve a intentarlo")
-        return
+  /* ================= MANEJO DE ENTER ================= */
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !loading) {
+      if (step === "ci" && ci.trim().length >= 5) {
+        handleVerifyCi();
+      } else if (step === "celular" && celular.trim()) {
+        handleSendOtp();
       }
-      
-      // ✅ OTP VÁLIDO - Proceder a crear sesión
-      // userId puede ser:
-      //   - Un ID real (usuario antiguo): ej. "12345"
-      //   - 'new' (usuario nuevo): usuario nunca antes visto
-      // Si por alguna razón userId es vacío, usar 'new'
-      const finalUserId = userId || 'new'
-      console.log("[v0] OTP válido. Creando sesión con userId:", finalUserId, "ci:", ci)
-      
-      // Importar dinámicamente la función crearSesion del servidor
-      // Esta función crea un JWT en una cookie HTTP-only (más seguro que localStorage)
-      const sessionModule = await import('@/lib/session')
-      const { crearSesion } = sessionModule
-      
-      // Guardar la sesión JWT (userId + ci en la cookie)
-      await crearSesion(finalUserId, ci)
-      
-      // Esperar un poco para que la cookie se establezca correctamente
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Mostrar mensaje de éxito
-      toast.success("¡Acceso concedido!")
-      
-      // Redirigir al menú intermedio
-      // AQUÍ es donde AMBOS tipos de usuarios (nuevo y antiguo) pasan por el menú
-      // El menú decidirá si mostrar "Crear Declaración Jurada" (nuevo) o "Declaración Jurada" (antiguo)
-      router.push(`/declaracion-jurada/menu`)
-      
-      // Refrescar la página para que useAuth lea la sesión nueva
-      router.refresh()
-    } catch (error: unknown) {
-      // Si algo falla, mostrar error
-      const errorMessage = error instanceof Error ? error.message : "Error al verificar código"
-      toast.error(errorMessage)
-      
-      // Limpiar OTP para reintentar
-      setOtpValid(false)
-      setOtp(["", "", "", "", "", ""])
-      setAutoVerifyTimer(0)
-      
-      // Devolver el foco al primer input del OTP
-      setTimeout(() => {
-        otpRefs.current[0]?.focus()
-      }, 100)
-    } finally {
-      setIsLoading(false)
-      verifyingRef.current = false
     }
-  }
-  const continuarComoNuevo = async () => {
-    try {
-      setIsLoading(true)
+  };
 
-      const sessionModule = await import("@/lib/session")
-      const { crearSesion } = sessionModule
+  /* ================= REENVIAR CÓDIGO ================= */
+  const handleResend = () => {
+    setOtp(["", "", "", "", "", ""]);
+    handleSendOtp();
+  };
 
-      // userId = 'new'
-      await crearSesion("new", ci)
-
-      toast.success("Sesión iniciada como usuario nuevo")
-
-      router.push("/declaracion-jurada/menu")
-      router.refresh()
-    } catch (error) {
-      toast.error("Error al iniciar sesión")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (timer <= 0) return
-    const interval = setInterval(() => {
-      setTimer((t) => t - 1)
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [timer])
-
-  const handleResend = () => sendOtp()
-
-  const handleCancel = () => {
-    setCi("")
-    setAllowCreate(false)
-    setCiError("")
-    setPhone("")
-    setPersona("")
-    setMaskedPhone("")
-    setOtp(["", "", "", "", "", ""])
-    setTimer(0)
-    setStep("ci")
-  }
-
+  /* ================= RENDER ================= */
   return (
-    <div className="flex items-center justify-center p-*">
-      <Card className="w-full max-w-md bg-white/1 backdrop-blur-lg border-2 border-[#01195F]/20 shadow-2xl shadow-[#01195F]/10 relative overflow-hidden">
-        {/* Borde brillante superior - amarillo */}
+    <div className="flex items-center justify-center  ">
+      <Card className="
+  w-full max-w-md
+  bg-white/20       /* más transparente */
+  backdrop-blur-lg  /* efecto borroso */
+  border border-white/30  /* opcional, borde sutil */
+  shadow-2xl shadow-[#01195F]/10
+  relative overflow-hidden
+">
+
+        {/* Borde brillante superior */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
         
         {/* Efecto de luz diagonal */}
@@ -301,130 +279,159 @@ export default function OtpComponent() {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-[#01195F] to-[#013991] rounded-full blur-lg opacity-50"></div>
               <div className="relative bg-gradient-to-br from-[#01195F] to-[#013991] p-3 rounded-full">
-                <Shield className="w-8 h-8 text-white" />
+                {step === "ok" ? (
+                  <CheckCircle2 className="w-8 h-8 text-white" />
+                ) : (
+                  <Shield className="w-8 h-8 text-white" />
+                )}
               </div>
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-[#ffffff] to-[#ffffff] bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-[#01195F] to-[#013991] bg-clip-text text-transparent">
             {step === "ci" && "Acceso Seguro"}
-            {step === "confirm" && "Verificación"}
+            {step === "celular" && "Verificación"}
             {step === "otp" && "Autenticación"}
+            {step === "ok" && "¡Acceso Concedido!"}
           </CardTitle>
-          <p className="text-center text-sm text-white">
+          <p className="text-center text-sm text-slate-600">
             {step === "ci" && "Ingresa tu Carnet de Identidad"}
-            {step === "confirm" && "Confirma tu número de contacto"}
+            {step === "celular" && "Confirma tu número de contacto"}
             {step === "otp" && "Ingresa el código de verificación"}
+            {step === "ok" && "Redirigiendo al menú..."}
           </p>
         </CardHeader>
 
         <CardContent className="space-y-4">
+          {/* ============ PASO: CI ============ */}
           {step === "ci" && (
-            <>
-              {!allowCreate ? (
-                <div className="space-y-3">
-                  <div className="relative group">
-                    <Input
-                      ref={inputRef}
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={ci}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        if (!/^\d*$/.test(value)) {
-                          setCiError("El CI solo debe contener números")
-                          return
-                        }
-                        setCiError("")
-                        setCi(value)
-                      }}
-                      placeholder="Ingresa tu CI"
-                      onKeyPress={handleKeyPress}
-                      className="h-12 pl-4 pr-4 bg-white border-2 border-[#01195F]/30 rounded-xl text-slate-800 placeholder:text-slate-400 focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 transition-all duration-300 text-base shadow-sm hover:shadow-md"
-                      disabled={isLoading}
-                    />
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#01195F]/0 via-[#013991]/0 to-[#01195F]/0 group-hover:from-[#01195F]/5 group-hover:via-[#013991]/5 group-hover:to-[#01195F]/5 pointer-events-none transition-all duration-300"></div>
-                  </div>
-                  {ciError && (
-                    <Alert className="border-red-200 bg-red-50/80 backdrop-blur-sm">
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
-                      <AlertTitle className="text-red-800 font-semibold">Error</AlertTitle>
-                      <AlertDescription className="text-red-700">{ciError}</AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Alert className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 backdrop-blur-sm shadow-lg">
-                    <FilePlus className="h-5 w-5 text-blue-600" />
-                    <AlertTitle className="text-blue-900 font-semibold">Nuevo Usuario</AlertTitle>
-                    <AlertDescription className="text-blue-800">
-                      Iniciarás sesión como usuario nuevo. Completa tu declaración.
-                    </AlertDescription>
-                  </Alert>
-
-                </div>
+            <div className="space-y-3">
+              <div className="relative group">
+                <Input
+                  ref={ciInputRef}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={ci}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (!/^\d*$/.test(value)) {
+                      setCiError("El CI solo debe contener números");
+                      return;
+                    }
+                    setCiError("");
+                    setCi(value);
+                  }}
+                  placeholder="Ingresa tu CI"
+                  onKeyPress={handleKeyPress}
+                  className="h-12 pl-4 pr-4 bg-white border-2 border-[#01195F]/30 rounded-xl text-slate-800 placeholder:text-slate-400 focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 transition-all duration-300 text-base shadow-sm hover:shadow-md"
+                  disabled={loading}
+                />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#01195F]/0 via-[#013991]/0 to-[#01195F]/0 group-hover:from-[#01195F]/5 group-hover:via-[#013991]/5 group-hover:to-[#01195F]/5 pointer-events-none transition-all duration-300"></div>
+              </div>
+              
+              {ciError && (
+                <Alert className="border-red-200 bg-red-50/80 backdrop-blur-sm">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertTitle className="text-red-800 font-semibold">Error</AlertTitle>
+                  <AlertDescription className="text-red-700">{ciError}</AlertDescription>
+                </Alert>
               )}
-            </>
+            </div>
           )}
 
-          {step === "confirm" && (
+          {/* ============ PASO: CELULAR ============ */}
+          {step === "celular" && (
             <div className="space-y-4">
-              <div className="p-4 bg-gradient-to-br from-[#01195F]/5 to-[#013991]/5 rounded-xl border border-[#01195F]/20 shadow-inner">
-                <p className="text-sm text-white mb-1">Número encontrado:</p>
-                <p className="text-lg font-semibold text-[#EEF1FA] tracking-wide">{maskedPhone}</p>
-              </div>
+              {maskedPhone && (
+                <div className="p-4 bg-gradient-to-br from-[#01195F]/5 to-[#013991]/5 rounded-xl border border-[#01195F]/20 shadow-inner">
+                  <p className="text-sm text-slate-600 mb-1">Número encontrado:</p>
+                  <p className="text-lg font-semibold text-[#01195F] tracking-wide">{maskedPhone}</p>
+                </div>
+              )}
+              
               <div className="relative group">
-                <Input             
-                  ref={phoneInputRef}
+                <Input
+                  ref={celularInputRef}
                   type="tel"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  value={phone}
+                  value={celular}
                   onChange={(e) => {
-                    const value = e.target.value
-
+                    const value = e.target.value;
                     if (!/^\d*$/.test(value)) {
-                      setPhoneError("El número de celular solo debe contener números")
-                      return
+                      setCelularError("El número de celular solo debe contener números");
+                      return;
                     }
-
-                    setPhoneError("")
-                    setPhone(value)
+                    setCelularError("");
+                    setCelular(value);
                   }}
                   placeholder="Confirma o ingresa tu número de celular"
                   onKeyPress={handleKeyPress}
                   className="h-12 pl-4 pr-4 bg-white border-2 border-[#01195F]/30 rounded-xl text-slate-800 placeholder:text-slate-400 focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 transition-all duration-300 text-base shadow-sm hover:shadow-md"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#01195F]/0 via-[#013991]/0 to-[#01195F]/0 group-hover:from-[#01195F]/5 group-hover:via-[#013991]/5 group-hover:to-[#01195F]/5 pointer-events-none transition-all duration-300"></div>
               </div>
+
+              {celularError && (
+                <Alert className="border-red-200 bg-red-50/80 backdrop-blur-sm">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertTitle className="text-red-800 font-semibold">Error</AlertTitle>
+                  <AlertDescription className="text-red-700">{celularError}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Mostrar advertencia de intentos */}
+              {intentos > 0 && (
+                <Alert className={`border-2 ${
+                  intentos === 1 ? "border-yellow-200 bg-yellow-50/80" : 
+                  intentos === 2 ? "border-orange-200 bg-orange-50/80" : 
+                  "border-red-200 bg-red-50/80"
+                } backdrop-blur-sm`}>
+                  <AlertTriangle className={`h-4 w-4 ${
+                    intentos === 1 ? "text-yellow-600" : 
+                    intentos === 2 ? "text-orange-600" : 
+                    "text-red-600"
+                  }`} />
+                  <AlertTitle className={`font-semibold ${
+                    intentos === 1 ? "text-yellow-800" : 
+                    intentos === 2 ? "text-orange-800" : 
+                    "text-red-800"
+                  }`}>
+                    {intentos === 1 && "Primer intento de verificación"}
+                    {intentos === 2 && "Segundo intento - ¡Cuidado!"}
+                    {intentos >= 3 && "Último intento"}
+                  </AlertTitle>
+                  <AlertDescription className={
+                    intentos === 1 ? "text-yellow-700" : 
+                    intentos === 2 ? "text-orange-700" : 
+                    "text-red-700"
+                  }>
+                    {intentos === 1 && `Tienes ${maxIntentos - intentos} intentos restantes`}
+                    {intentos === 2 && "¡Este es tu último intento disponible!"}
+                    {intentos >= 3 && "Has agotado tus intentos"}
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
           )}
-          {phoneError && (
-            <Alert className="border-red-200 bg-red-50/80 backdrop-blur-sm">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-              <AlertTitle className="text-red-800 font-semibold">Error</AlertTitle>
-              <AlertDescription className="text-red-700">
-                {phoneError}
-              </AlertDescription>
-            </Alert>
-          )}
 
+          {/* ============ PASO: OTP ============ */}
           {step === "otp" && (
             <div className="space-y-6">
               <div className="p-4 bg-gradient-to-br from-[#01195F]/5 to-[#013991]/5 rounded-xl border border-[#01195F]/20 shadow-inner">
-                <p className="text-sm text-white text-center">
-                  Código enviado a <span className="font-semibold text-[#ffffff]">{maskedPhone}</span>
+                <p className="text-sm text-slate-600 text-center">
+                  Código enviado a <span className="font-semibold text-[#01195F]">{celular}</span>
                 </p>
               </div>
 
-              <div className="flex justify-center gap-1.5 sm:gap-2.5 px-4 sm:px-6">
+              {/* Inputs de OTP con padding para evitar cortes */}
+              <div className="flex justify-center gap-2 px-2">
                 {otp.map((digit, index) => (
-                  <div key={index} className="relative group flex-shrink-0">
+                  <div key={index} className="relative group">
                     <input
                       ref={(el) => {
-                        otpRefs.current[index] = el
+                        otpRefs.current[index] = el;
                       }}
                       type="text"
                       inputMode="numeric"
@@ -433,89 +440,76 @@ export default function OtpComponent() {
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
                       onPaste={handleOtpPaste}
-                      className="w-9 h-11 sm:w-11 sm:h-13 text-center text-lg sm:text-xl font-bold bg-white border-2 border-[#01195F]/30 text-slate-800 rounded-lg sm:rounded-xl focus:outline-none focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 hover:border-[#013991]/50 hover:shadow-lg transition-all duration-200 shadow-md placeholder:text-slate-300"
+                      className="w-12 h-14 text-center text-xl font-bold bg-white border-2 border-[#01195F]/30 text-slate-800 rounded-xl focus:outline-none focus:border-[#01195F] focus:ring-4 focus:ring-[#01195F]/20 hover:border-[#013991]/50 hover:shadow-lg transition-all duration-200 shadow-md placeholder:text-slate-300"
                       placeholder="•"
+                      disabled={loading}
                     />
-                    <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#01195F]/0 to-[#013991]/0 group-hover:from-[#01195F]/10 group-hover:to-[#013991]/10 pointer-events-none transition-all duration-300"></div>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#01195F]/0 to-[#013991]/0 group-hover:from-[#01195F]/10 group-hover:to-[#013991]/10 pointer-events-none transition-all duration-300"></div>
                   </div>
                 ))}
               </div>
-                <div className="flex justify-center gap-2 mt-2">
-  {otp.map((digit, index) => (
-    <div
-      key={index}
-      className={`w-8 h-1 rounded-full transition-all
-        ${digit ? "bg-[#01195F]" : "bg-[#01195F]/20"}
-      `}
-    />
-  ))}
-</div>
 
-             
+              {/* Indicador de progreso */}
+              <div className="flex justify-center gap-2 mt-2">
+                {otp.map((digit, index) => (
+                  <div
+                    key={index}
+                    className={`w-10 h-1 rounded-full transition-all ${
+                      digit ? "bg-[#01195F]" : "bg-[#01195F]/20"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-              {autoVerifyTimer > 0 && (
-                <div className="flex items-center justify-center gap-2 text-sm text-[#01195F] animate-pulse">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Verificando automáticamente en {autoVerifyTimer}s...</span>
+          {/* ============ PASO: OK ============ */}
+          {step === "ok" && (
+            <div className="text-center py-8">
+              <div className="flex justify-center mb-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur-lg opacity-50 animate-pulse"></div>
+                  <div className="relative bg-gradient-to-br from-green-500 to-emerald-500 p-4 rounded-full">
+                    <CheckCircle2 className="w-12 h-12 text-white" />
+                  </div>
                 </div>
-              )}
+              </div>
+              <h3 className="text-xl font-bold text-green-700 mb-2">¡Verificación exitosa!</h3>
+              <p className="text-slate-600">Redirigiendo al menú principal...</p>
             </div>
           )}
         </CardContent>
 
         <CardFooter className="flex flex-col gap-3 pt-2">
+          {/* ============ BOTÓN: CI ============ */}
           {step === "ci" && (
-            <>
-              {!allowCreate ? (
-                <Button
-                  className="w-full h-12 bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white font-semibold rounded-xl shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
-                  disabled={isLoading || ci.trim().length < 5}
-                  onClick={() => handleSearch({ ci })}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Buscando...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <Shield className="w-5 h-5" />
-                      Buscar
-                    </span>
-                  )}
-                </Button>
-              ) 
-              : (
-                <div className="w-full flex gap-2">
-        <Button
-          onClick={handleCancel}
-          variant="outline"
-          className="flex-1 h-12 border-2 border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
-        >
-          Cancelar
-        </Button>
-
-        <Button
-          onClick={continuarComoNuevo}
-          disabled={isLoading}
-          className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-600/90 hover:to-indigo-600/90 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.02]"
-        >
-          <FilePlus className="w-5 h-5 mr-2" />
-          Continuar
-        </Button>
-      </div>
-              )
-              }
-            </>
+            <Button
+              className="w-full h-12 bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white font-semibold rounded-xl shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+              disabled={loading || ci.trim().length < 5}
+              onClick={handleVerifyCi}
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Verificando...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Shield className="w-5 h-5" />
+                  Verificar CI
+                </span>
+              )}
+            </Button>
           )}
 
-          {step === "confirm" && (
+          {/* ============ BOTÓN: CELULAR ============ */}
+          {step === "celular" && (
             <Button
               className="w-full h-12 bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white font-semibold rounded-xl shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-              disabled={!phone.trim() || isLoading}
-              onClick={sendOtp}
+              disabled={!celular.trim() || loading}
+              onClick={handleSendOtp}
             >
-              {isLoading ? (
+              {loading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   Enviando...
@@ -526,19 +520,21 @@ export default function OtpComponent() {
             </Button>
           )}
 
+          {/* ============ BOTÓN: OTP ============ */}
           {step === "otp" && (
             <>
               <div className="w-full text-center text-sm">
                 {timer > 0 ? (
-                  <p className="text-slate-600 text-white">
-                    Reenviar código en <span className="font-semibold text-[#ffffff]">{timer}s</span>
+                  <p className="text-slate-600">
+                    Reenviar código en <span className="font-semibold text-[#01195F]">{timer}s</span>
                   </p>
                 ) : (
-                  <p className="text-slate-600 text-white">
+                  <p className="text-slate-600">
                     ¿No recibiste el código?{" "}
                     <button
                       onClick={handleResend}
-                      className="text-[#FFBC29] hover:text-[#013991] font-semibold underline underline-offset-2 hover:underline-offset-4 transition-all"
+                      className="text-[#01195F] hover:text-[#013991] font-semibold underline underline-offset-2 hover:underline-offset-4 transition-all"
+                      disabled={loading}
                     >
                       Reenviar código
                     </button>
@@ -551,11 +547,11 @@ export default function OtpComponent() {
                   otp.every((d) => d !== "")
                     ? "bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 hover:scale-[1.02] active:scale-[0.98]"
                     : "bg-slate-200 text-slate-500 cursor-not-allowed"
-                } ${isLoading ? "animate-pulse" : ""}`}
-                disabled={!otp.every((d) => d !== "") || isLoading}
-                onClick={() => handleVerifyOtp()}
+                } ${loading ? "animate-pulse" : ""}`}
+                disabled={!otp.every((d) => d !== "") || loading}
+                onClick={handleVerifyOtp}
               >
-                {isLoading ? (
+                {loading ? (
                   <span className="flex items-center gap-2">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     Verificando...
@@ -576,5 +572,5 @@ export default function OtpComponent() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
