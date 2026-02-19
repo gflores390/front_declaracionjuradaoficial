@@ -23,11 +23,12 @@ export const sendOtpApi = (data: {
 
 /* ========= VERIFICAR OTP ========= */
 export const verifyOtpApi = (data: {
-  persona_ci: string;
+  personaCi: string;
   codigo: string;
 }) => {
-  return axios.post(`${URL}/declaracion-jurada/otp/verificar`, data);
+  return axios.post(`${URL}/persona/codigo/verificar`, data);
 };
+
 // declaracion-jurada.api.ts
 
 // Agregar nueva función para obtener declaración por CI

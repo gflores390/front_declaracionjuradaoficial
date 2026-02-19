@@ -21,9 +21,7 @@ export default function OtpCiWhats() {
   const [ci, setCi] = useState("");
   const [celular, setCelular] = useState("");
   const [maskedPhone, setMaskedPhone] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [ciError, setCiError] = useState("");
   const [celularError, setCelularError] = useState("");
   const [intentos, setIntentos] = useState(0);
@@ -32,7 +30,10 @@ export default function OtpCiWhats() {
   const ciInputRef = useRef<HTMLInputElement>(null);
   const celularInputRef = useRef<HTMLInputElement>(null);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const verifyingRef = useRef(false);
+
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
+  const [loading, setLoading] = useState(false);
+  const verifyingRef = useRef<boolean>(false);
 
   /* ================= AUTO FOCUS ================= */
   useEffect(() => {
@@ -52,16 +53,18 @@ export default function OtpCiWhats() {
     return () => clearInterval(i);
   }, [timer]);
 
-  /* ================= AUTO VERIFY OTP ================= */
-  useEffect(() => {
-    const isComplete = otp.every((d) => d !== "");
-    if (isComplete && !loading && step === "otp") {
-      const timeout = setTimeout(() => {
-        handleVerifyOtp();
-      }, 500);
-      return () => clearTimeout(timeout);
-    }
-  }, [otp, loading, step]);
+  /* ================= AUTO VERIFY OTP automatico ================= */
+useEffect(() => {
+  const isComplete = otp.every((d) => d !== "");
+
+  if (!isComplete) return;
+  if (loading) return;
+  if (verifyingRef.current) return;
+  if (step !== "otp") return;
+
+  handleVerifyOtp();
+}, [otp]);
+
 
   /* ================= PASO 1: VERIFICAR CI ================= */
   const handleVerifyCi = async () => {
@@ -163,16 +166,22 @@ export default function OtpCiWhats() {
 // localStorage.setItem("dj_autorizado", "true");
 // localStorage.setItem("dj_ci", ci);
 
+
 // ✅ REEMPLAZA con:
+
 const handleVerifyOtp = async () => {
+  if (verifyingRef.current === true) return;
+  verifyingRef.current = true;
+
+  const codigoCompleto = otp.join("");
+
+  if (codigoCompleto.length !== 6) {
+    toast.error("El código debe tener 6 dígitos");
+    verifyingRef.current = false;
+    return;
+  }
+
   try {
-    const codigoCompleto = otp.join("");
-
-    if (codigoCompleto.length !== 6) {
-      toast.error("El código debe tener 6 dígitos");
-      return;
-    }
-
     setLoading(true);
 
     const response = await verifyOtpApi({
@@ -190,11 +199,19 @@ const handleVerifyOtp = async () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ token }),
       });
 
       toast.success("¡Verificación exitosa!");
-      router.push("/declaracion-jurada/menu");
+      setStep("ok"); 
+      setOtp(["", "", "", "", "", ""]); 
+
+      setTimeout(() => {
+        router.replace("/declaracion-jurada/menu");
+      }, 800);
+
+      // 👆 replace evita re-render extraño
     } else {
       toast.error("Código incorrecto");
     }
@@ -204,8 +221,11 @@ const handleVerifyOtp = async () => {
     );
   } finally {
     setLoading(false);
+    verifyingRef.current = false;
   }
 };
+
+
 
   /* ================= MANEJO DE OTP INPUTS ================= */
   const handleOtpChange = (index: number, value: string) => {
@@ -543,13 +563,17 @@ const handleVerifyOtp = async () => {
               </div>
 
               <Button
+              type="button"
                 className={`w-full h-12 font-semibold rounded-xl transition-all duration-300 ${
                   otp.every((d) => d !== "")
                     ? "bg-gradient-to-r from-[#01195F] to-[#013991] hover:from-[#01195F]/90 hover:to-[#013991]/90 text-white shadow-lg shadow-[#01195F]/30 hover:shadow-xl hover:shadow-[#01195F]/40 hover:scale-[1.02] active:scale-[0.98]"
                     : "bg-slate-200 text-slate-500 cursor-not-allowed"
                 } ${loading ? "animate-pulse" : ""}`}
                 disabled={!otp.every((d) => d !== "") || loading}
-                onClick={handleVerifyOtp}
+                onClick={(e) => {
+                          e.preventDefault();
+                          handleVerifyOtp();
+                        }}
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

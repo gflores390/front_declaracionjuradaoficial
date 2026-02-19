@@ -1,3 +1,4 @@
+"use client"
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Geist, Geist_Mono } from "next/font/google";
