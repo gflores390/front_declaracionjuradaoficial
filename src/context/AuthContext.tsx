@@ -7,7 +7,7 @@ interface AuthContextProps {
   isAuthenticated: boolean;
   userInfo: UserData | null;
   isLoading: boolean;
-  createSession: (data: UserData) => void;
+  // createSession: (data: UserData) => void;
   logout: () => void;
 }
 

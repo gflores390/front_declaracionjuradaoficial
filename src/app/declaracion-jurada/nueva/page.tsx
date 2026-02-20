@@ -1,5 +1,5 @@
-import { DeclaracionData } from "../declaracion-jurada.interface";
-import { getDeclaracion } from "../declaracion-jurada.api";
+// import { DeclaracionData } from "../declaracion-jurada.interface";
+// import { getDeclaracion } from "../declaracion-jurada.api";
 import { DeclaracionForm } from "@/components/declaracion-jurada/declaracion-form";
 import { obtenerSesion } from "@/lib/session";
 import { redirect } from 'next/navigation'
@@ -22,19 +22,20 @@ export default async function NuevaDeclaracionJurada({ params }: Params) {
         }
     }
 
-    let data: DeclaracionData | undefined = undefined;
+    // let data: DeclaracionData | undefined = undefined;
 
     if (id && id !== 'null') {
         try {
-            data = await getDeclaracion(id);
+            // data = await getDeclaracion(id);
         } catch (error: any) {
             console.warn("No se pudo obtener la declaración:", error.message);
-            data = undefined;
+            // data = undefined;
         }
     }
 
     // ✅ RETORNAR DIRECTAMENTE EL COMPONENTE SIN WRAPPERS
-    return <DeclaracionForm declaracion={data} />;
+    // return <DeclaracionForm declaracion={data} />;
+    return <DeclaracionForm declaracion={undefined} />;
 }
 
 // ✅ CONFIGURACIÓN PARA REVALIDACIÓN

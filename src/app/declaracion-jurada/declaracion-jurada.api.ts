@@ -2,15 +2,23 @@ import axios from "axios";
 
 const URL = process.env.NEXT_PUBLIC_API_URL;
 
+if (!URL) {
+  throw new Error("NEXT_PUBLIC_API_URL no está definida");
+}
+
+
+const api = axios.create({
+  baseURL: URL,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 /* ========= VERIFICAR CI ========= */
 export const verificacionCi = async (ci: string) => {
-  const res = await fetch(`${URL}/persona/codigo/${ci}`, {
-    cache: "no-store",
-  });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message);
-  return data;
+  const response = await api.get(`/persona/codigo/${ci}`);
+  return response.data;
 };
 
 /* ========= ENVIAR OTP ========= */
@@ -18,7 +26,7 @@ export const sendOtpApi = (data: {
   celular: string;
   personaCi: string;
 }) => {
-  return axios.post(`${URL}/persona/codigo/enviar`, data);
+  return api.post(`/persona/codigo/enviar`, data);
 };
 
 /* ========= VERIFICAR OTP ========= */
@@ -37,14 +45,25 @@ export const verifyOtpApi = (data: {
 
 // declaracion-jurada.api.ts
 
-// Agregar nueva función para obtener declaración por CI
-export const getDeclaracionPorCi = async (ci: string) => {
-  const response = await axios.get(`${URL}/declaracion-jurada/existe/${ci}`);
+/* ========= OBTENER DECLARACION POR CI/MES/AÑO ========= */
+export const getDeclaracionCiMesAnio = async (
+  ci: string,
+  mes: string,
+  anio: number
+) => {
+  const response = await api.get(
+    `/persona/declaracion-jurada/${ci}/${mes}/${anio}`
+  );
   return response.data.data.declaracion;
 };
 
-// Actualizar la función de update para usuarios antiguos
+/* ========= UPDATE DECLARACION ANTIGUA ========= */
 export const updateDeclaracionAntigua = async (payload: any) => {
-  const response = await axios.put(`${URL}/declaracion-jurada`, payload);
+  const response = await api.put(`/declaracion-jurada`, payload);
   return response.data;
 };
+
+export const deleteDeclaracion = async (id: string) => {
+  console.log('funcionalidad en desarrollo');
+  
+}
