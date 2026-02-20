@@ -67,110 +67,87 @@ useEffect(() => {
 
 
   /* ================= PASO 1: VERIFICAR CI ================= */
-  const handleVerifyCi = async () => {
-    setCiError("");
-    
-    if (!ci.trim()) {
-      setCiError("Por favor ingresa tu CI");
-      return;
-    }
-    
-    if (ci.trim().length < 5) {
-      setCiError("El CI debe tener al menos 5 dígitos");
-      return;
-    }
+const handleVerifyCi = async () => {
+  setCiError("");
 
-    setLoading(true);
-    try {
-      const res = await verificacionCi(ci);
-      
-      if (res.status === "success") {
-        // Si el backend retorna un número enmascarado, usarlo
-        if (res.numero) {
-          setMaskedPhone(res.numero);
-        }
-        toast.success("CI verificado correctamente");
-        setStep("celular");
-      } else {
-        setCiError("CI no registrado en el sistema");
-        toast.error("CI no encontrado");
+  if (!ci.trim()) {
+    setCiError("Por favor ingresa tu CI");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await verificacionCi(ci);
+
+    if (res.status === "success") {
+      toast.success(res.message); // 🔥 MENSAJE DEL BACK
+
+      if (res.data?.celularEnmascarado) {
+        setMaskedPhone(res.data.celularEnmascarado);
       }
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.message || "Error al verificar CI";
-      setCiError(errorMsg);
-      toast.error(errorMsg);
-    } finally {
-      setLoading(false);
+
+      setStep("celular");
+    } else {
+      toast.error(res.message); // 🔥 MENSAJE DEL BACK
+      setCiError(res.message);
     }
-  };
+  } catch (error: any) {
+    const errorMsg =
+      error.response?.data?.message || "Error inesperado";
+    toast.error(errorMsg);
+    setCiError(errorMsg);
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ================= PASO 2: ENVIAR OTP ================= */
-  const handleSendOtp = async () => {
-    setCelularError("");
-    
-    if (!celular.trim()) {
-      setCelularError("Por favor ingresa tu número de celular");
-      return;
+ const handleSendOtp = async () => {
+  setCelularError("");
+
+  if (!celular.trim()) {
+    setCelularError("Por favor ingresa tu número de celular");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await sendOtpApi({
+      celular: celular.trim(),
+      personaCi: ci.trim(),
+    });
+
+    const data = response.data;
+
+    toast.success(data.message); // 🔥 MENSAJE DEL BACK
+
+    if (data.intentos !== undefined) {
+      setIntentos(data.intentos);
     }
 
-    if (!/^\d+$/.test(celular)) {
-      setCelularError("El número de celular solo debe contener números");
-      return;
+    if (data.maxIntentos !== undefined) {
+      setMaxIntentos(data.maxIntentos);
     }
 
-    setLoading(true);
-    try {
-      const response = await sendOtpApi({ 
-        celular: celular.trim(), 
-        personaCi: ci.trim() 
-      });
-      
-      // Capturar información de intentos si el backend la envía
-      // Acceder a response.data ya que sendOtpApi retorna AxiosResponse
-      const data = response.data || response;
-      
-      if (data.intentos !== undefined) {
-        setIntentos(data.intentos);
-      }
-      if (data.maxIntentos !== undefined) {
-        setMaxIntentos(data.maxIntentos);
-      }
-      
-      // Mostrar advertencia según intentos
-      if (data.intentos === 1) {
-        toast.warning("Primer intento de verificación", {
-          description: "Tienes 2 intentos restantes"
-        });
-      } else if (data.intentos === 2) {
-        toast.error("Segundo intento de verificación", {
-          description: "¡Último intento disponible!"
-        });
-      }
-      
-      setTimer(data.otpInfo?.duracionSegundos || 180);
-      toast.success("Código enviado a WhatsApp");
-      setStep("otp");
-    } catch (error: any) {
-      const errorMsg = error.response?.data?.message || "Error al enviar OTP";
-      setCelularError(errorMsg);
-      toast.error(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setTimer(data.otpInfo?.duracionSegundos || 180);
+    setStep("otp");
+
+  } catch (error: any) {
+    const errorMsg =
+      error.response?.data?.message || "Error al enviar OTP";
+
+    toast.error(errorMsg); // 🔥 MENSAJE DEL BACK
+    setCelularError(errorMsg);
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ================= PASO 3: VERIFICAR OTP ================= */
- // Reemplaza la sección donde guardas en localStorage:
-
-// ❌ ELIMINA ESTO:
-// localStorage.setItem("dj_autorizado", "true");
-// localStorage.setItem("dj_ci", ci);
-
-
-// ✅ REEMPLAZA con:
-
 const handleVerifyOtp = async () => {
-  if (verifyingRef.current === true) return;
+  if (verifyingRef.current) return;
   verifyingRef.current = true;
 
   const codigoCompleto = otp.join("");
@@ -192,40 +169,28 @@ const handleVerifyOtp = async () => {
     const data = response.data;
 
     if (data.status === "success") {
-      const token = data.data.token;
+      toast.success(data.message); // 🔥 MENSAJE DEL BACK
 
-      await fetch("/api/auth/crear-sesion", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ token }),
-      });
-
-      toast.success("¡Verificación exitosa!");
-      setStep("ok"); 
-      setOtp(["", "", "", "", "", ""]); 
+      setStep("ok");
+      setOtp(["", "", "", "", "", ""]);
 
       setTimeout(() => {
         router.replace("/declaracion-jurada/menu");
       }, 800);
-
-      // 👆 replace evita re-render extraño
     } else {
-      toast.error("Código incorrecto");
+      toast.error(data.message); // 🔥 MENSAJE DEL BACK
     }
+
   } catch (error: any) {
-    toast.error(
-      error.response?.data?.message || "Código incorrecto"
-    );
+    const errorMsg =
+      error.response?.data?.message || "Código incorrecto";
+
+    toast.error(errorMsg); // 🔥 MENSAJE DEL BACK
   } finally {
     setLoading(false);
     verifyingRef.current = false;
   }
 };
-
-
 
   /* ================= MANEJO DE OTP INPUTS ================= */
   const handleOtpChange = (index: number, value: string) => {
@@ -307,13 +272,13 @@ const handleVerifyOtp = async () => {
               </div>
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-[#01195F] to-[#013991] bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-[#ffffff] to-[#ffffff] bg-clip-text text-transparent">
             {step === "ci" && "Acceso Seguro"}
             {step === "celular" && "Verificación"}
             {step === "otp" && "Autenticación"}
             {step === "ok" && "¡Acceso Concedido!"}
           </CardTitle>
-          <p className="text-center text-sm text-slate-600">
+          <p className="text-center text-sm text-ffffff/80">
             {step === "ci" && "Ingresa tu Carnet de Identidad"}
             {step === "celular" && "Confirma tu número de contacto"}
             {step === "otp" && "Ingresa el código de verificación"}

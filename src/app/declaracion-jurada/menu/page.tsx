@@ -9,11 +9,7 @@ import { useEffect, useState } from "react";
 
 export default function MenuDeclaracion() {
   const router = useRouter();
-  
-  // useAuth() lee la sesión JWT de las cookies (creada por crearSesion() en OTP)
-  // - isAuthenticated: true si existe sesión válida
-  // - userInfo: { userId: 'new' o ID real, ci: CI del usuario }
-  // - isLoading: true mientras se verifica la sesión
+
   const { isAuthenticated, userInfo, isLoading } = useAuth();
   
   // Estado local para manejar hidratación (cliente vs servidor)

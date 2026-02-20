@@ -26,7 +26,13 @@ export const verifyOtpApi = (data: {
   personaCi: string;
   codigo: string;
 }) => {
-  return axios.post(`${URL}/persona/codigo/verificar`, data);
+   return axios.post(
+    `${URL}/persona/codigo/verificar`,
+    data,
+    {
+      withCredentials: true, 
+    }
+  );
 };
 
 // declaracion-jurada.api.ts
